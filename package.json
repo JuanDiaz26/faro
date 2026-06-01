@@ -1,0 +1,16 @@
+{
+  "name": "faro",
+  "version": "0.1.0",
+  "description": "Faro — finanzas personales + hábitos. Monorepo: client (Vite/React) + server (Express/SQLite).",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix client install && npm --prefix client run build && npm --prefix server install",
+    "start": "node server/server.js",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "init-db": "npm --prefix server run init-db"
+  },
+  "engines": {
+    "node": ">=22.3.0"
+  }
+}

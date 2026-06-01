@@ -1,18 +1,37 @@
-# 💰 Finanzas App - Proyecto Personal
+# 🧭 Eje — App personal de control de vida
 
-## 🎯 Objetivo del proyecto
+App web personal (instalable como PWA en celular) para llevar control de **dos áreas críticas que en piloto automático se van de las manos**: las **finanzas** y los **hábitos de vida** (sueño, comida, movimiento, foco diario, uso del celular).
 
-Aplicación web personal (instalable como PWA en celular) para gestión de finanzas personales. El objetivo final es **salir de deudas, empezar a ahorrar y entender en qué se va el dinero**.
-
-Es de uso personal (un solo usuario), por lo que **no necesita sistema de autenticación en la v1**.
+> **La hipótesis del proyecto:** medir lo que pasa es la mitad del cambio. Si no ves "gasté $80k en delivery" o "dormí 4hs promedio esta semana", vivís en piloto automático. **Eje** es el espejo honesto que te obliga a verlo, en menos de 30 segundos por día.
 
 ---
 
-## 🛠️ Stack técnico
+## 🗺️ Visión por fases
+
+| Fase | Qué incluye | Cuándo | Estado |
+|---|---|---|---|
+| **Fase 1 — Finanzas** | Gastos, ingresos, categorías, presupuestos, deudas, gastos fijos. Dashboard con totales del mes. | MVP en 3 días | 🔨 En curso |
+| **Espera de validación** | 1-2 semanas usando Fase 1 a diario para confirmar que el flujo de carga te sirve. | Después del deploy | ⏳ |
+| **Fase 2 — Vida (Hábitos)** | 5 trackers: sueño, scroll nocturno, comida, movimiento, intención del día. Vista semanal + cruce con finanzas. | Después de la validación | 🧊 Planificada |
+| **Fase 3 — Multiusuario / Comunidad** | Login, auth, separación de datos por usuario, eventualmente comparativas anónimas con amigos. | Si Fase 1+2 sostienen uso real 2-3 meses | 🧊 A evaluar |
+
+---
+
+## 🎯 Principios de diseño (válidos para toda la app)
+
+1. **Cargar tiene que ser barato.** Cualquier registro debe tomar menos de 10 segundos. Si lleva más, no se va a usar.
+2. **Ver patrones, no enterrar en datos.** La app no es un Excel; es un espejo. Mostrar lo importante en pocas pantallas.
+3. **Cero notificaciones agresivas, cero gamificación tóxica.** La app es para el usuario, no para retenerlo como producto. Si un día no se usa, no culpa ni recordatorios molestos.
+4. **Cruce finanzas ↔ vida es la joya.** Lo que ninguna otra app hace bien. Vistas semanales/mensuales que muestren los dos lados juntos.
+5. **Privacidad primero.** Datos sensibles (plata y hábitos personales). DB local mientras sea single-user; cuando sea multiusuario, encriptación y separación clara.
+
+---
+
+## 🛠️ Stack técnico (compartido por todas las fases)
 
 ### Frontend
-- **React 18** con **Vite** (no Create React App)
-- **TailwindCSS** para estilos
+- **React 18** + **Vite 6** (fijados por compatibilidad con Node 22.3.0)
+- **TailwindCSS v3** (PostCSS, estable para shadcn)
 - **shadcn/ui** para componentes base
 - **Recharts** para gráficos
 - **Axios** para llamadas HTTP
@@ -22,16 +41,16 @@ Es de uso personal (un solo usuario), por lo que **no necesita sistema de autent
 
 ### Backend
 - **Node.js + Express**
-- **better-sqlite3** (síncrono, más rápido para uso local)
+- **better-sqlite3** (síncrono, perfecto para uso local)
 - **cors** + **helmet** (seguridad básica)
 - **express-validator** para validar inputs
 
 ### Base de datos
-- **SQLite** (un solo archivo `finanzas.db`)
+- **SQLite** (un solo archivo `finanzas.db`). Cuando se vaya a multiusuario real, migrar a **PostgreSQL**.
 
-### Deploy (cuando esté listo)
+### Deploy
 - **Frontend**: Vercel
-- **Backend + DB**: Railway (con volumen persistente para el .db)
+- **Backend + DB**: Railway (con volumen persistente para el `.db`)
 
 ---
 
@@ -45,7 +64,7 @@ finanzas-app/
 │   │   └── icons/            # Iconos de la app
 │   ├── src/
 │   │   ├── components/       # Componentes reutilizables
-│   │   │   ├── ui/          # Botones, inputs, cards
+│   │   │   ├── ui/          # Botones, inputs, cards (shadcn)
 │   │   │   ├── TransactionForm.jsx
 │   │   │   ├── CategoryPicker.jsx
 │   │   │   └── ...
@@ -54,6 +73,7 @@ finanzas-app/
 │   │   │   ├── History.jsx
 │   │   │   ├── Budgets.jsx
 │   │   │   ├── Debts.jsx
+│   │   │   ├── Vida.jsx          # Fase 2
 │   │   │   └── Settings.jsx
 │   │   ├── hooks/           # Custom hooks
 │   │   ├── api/             # Funciones Axios
@@ -66,41 +86,38 @@ finanzas-app/
 │
 ├── server/                    # Backend Node
 │   ├── routes/               # Endpoints por recurso
-│   │   ├── transactions.js
-│   │   ├── categories.js
-│   │   ├── budgets.js
-│   │   ├── debts.js
-│   │   └── fixed-expenses.js
 │   ├── controllers/          # Lógica de negocio
 │   ├── middleware/           # Validaciones, errores
 │   ├── db/
-│   │   ├── schema.sql       # Schema de la DB
-│   │   ├── seed.js          # Datos iniciales (categorías)
-│   │   └── finanzas.db      # La DB en sí
+│   │   ├── schema.sql
+│   │   ├── seed.js
+│   │   ├── init.js
+│   │   ├── database.js      # Conexión compartida
+│   │   └── finanzas.db
 │   ├── utils/
 │   ├── server.js
 │   └── package.json
 │
 ├── .gitignore
-└── README.md
+└── PROYECTO.md
 ```
 
 ---
 
-## 🗃️ Schema de la base de datos
+# 🟢 Fase 1 — Finanzas (MVP en 3 días)
+
+## 🗃️ Schema (Fase 1)
 
 ```sql
--- Categorías de gastos/ingresos
 CREATE TABLE categories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  color TEXT NOT NULL,         -- hex color
-  icon TEXT NOT NULL,          -- emoji o nombre de icono
+  color TEXT NOT NULL,
+  icon TEXT NOT NULL,
   type TEXT NOT NULL,          -- 'expense' | 'income'
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Transacciones (gastos e ingresos)
 CREATE TABLE transactions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   category_id INTEGER NOT NULL,
@@ -113,42 +130,38 @@ CREATE TABLE transactions (
   FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
--- Presupuestos mensuales por categoría
 CREATE TABLE budgets (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   category_id INTEGER NOT NULL,
   monthly_limit REAL NOT NULL,
-  month INTEGER NOT NULL,      -- 1-12
+  month INTEGER NOT NULL,
   year INTEGER NOT NULL,
   FOREIGN KEY (category_id) REFERENCES categories(id),
   UNIQUE(category_id, month, year)
 );
 
--- Deudas
 CREATE TABLE debts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   total_amount REAL NOT NULL,
   remaining_amount REAL NOT NULL,
-  interest_rate REAL DEFAULT 0,    -- % anual
+  interest_rate REAL DEFAULT 0,
   minimum_payment REAL DEFAULT 0,
-  due_day INTEGER,                  -- día del mes (1-31)
+  due_day INTEGER,
   active BOOLEAN DEFAULT 1,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Gastos fijos recurrentes
 CREATE TABLE fixed_expenses (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   category_id INTEGER NOT NULL,
   name TEXT NOT NULL,
   amount REAL NOT NULL,
-  due_day INTEGER,                  -- día del mes
+  due_day INTEGER,
   active BOOLEAN DEFAULT 1,
   FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
--- Ingresos recurrentes
 CREATE TABLE incomes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   amount REAL NOT NULL,
@@ -162,27 +175,25 @@ CREATE TABLE incomes (
 ### Categorías iniciales (seed)
 
 ```
-🍔 Comida          (expense, #FF6B6B)
-🍽️ Cenas/Salidas   (expense, #FFA94D)
-⛽ Transporte      (expense, #4DABF7)
-💪 Salud/Fitness   (expense, #51CF66)
+🍔 Comida           (expense, #FF6B6B)
+🍽️ Cenas/Salidas    (expense, #FFA94D)
+⛽ Transporte       (expense, #4DABF7)
+💪 Salud/Fitness    (expense, #51CF66)
 💇 Cuidado personal (expense, #DA77F2)
-👕 Ropa            (expense, #FF8787)
-📱 Telefonía       (expense, #748FFC)
-🏠 Gastos fijos    (expense, #868E96)
-🎮 Ocio/Vicios     (expense, #F783AC)
-💳 Pago deudas     (expense, #FA5252)
-📦 Otros           (expense, #ADB5BD)
-💼 Sueldo          (income, #20C997)
-💰 Extras          (income, #15AABF)
+👕 Ropa             (expense, #FF8787)
+📱 Telefonía        (expense, #748FFC)
+🏠 Gastos fijos     (expense, #868E96)
+🎮 Ocio/Vicios      (expense, #F783AC)
+💳 Pago deudas      (expense, #FA5252)
+📦 Otros            (expense, #ADB5BD)
+💼 Sueldo           (income, #20C997)
+💰 Extras           (income, #15AABF)
 ```
 
----
-
-## 🔌 API Endpoints
+## 🔌 API Endpoints (Fase 1)
 
 ### Transactions
-- `GET /api/transactions` — lista con filtros (mes, categoría)
+- `GET /api/transactions` — lista con filtros (mes, categoría, tipo, método)
 - `GET /api/transactions/:id` — detalle
 - `POST /api/transactions` — crear
 - `PUT /api/transactions/:id` — editar
@@ -190,7 +201,7 @@ CREATE TABLE incomes (
 - `GET /api/transactions/summary` — totales del mes actual
 
 ### Categories
-- `GET /api/categories`
+- `GET /api/categories` (opcional `?type=expense|income`)
 - `POST /api/categories`
 - `PUT /api/categories/:id`
 - `DELETE /api/categories/:id`
@@ -207,7 +218,7 @@ CREATE TABLE incomes (
 - `POST /api/debts`
 - `PUT /api/debts/:id`
 - `DELETE /api/debts/:id`
-- `POST /api/debts/:id/payment` — registrar pago (reduce remaining)
+- `POST /api/debts/:id/payment` — registrar pago
 - `GET /api/debts/simulator?monthly_payment=X` — proyección
 
 ### Fixed Expenses
@@ -217,138 +228,158 @@ CREATE TABLE incomes (
 - `DELETE /api/fixed-expenses/:id`
 
 ### Dashboard
-- `GET /api/dashboard` — todo en un endpoint:
-  - Total gastado del mes
-  - Total ingresos del mes
-  - Balance
-  - Top 3 categorías de gasto
-  - Próximos vencimientos (deudas + fijos)
-  - Dinero disponible restante del mes
+- `GET /api/dashboard` — todo en uno (total gastado, ingresos, balance, top 3 categorías, próximos vencimientos, dinero disponible)
 
----
+## 📱 Pantallas (Fase 1)
 
-## 📱 Pantallas (vistas)
+1. **Dashboard** (`/`) — cards de Ingresos/Gastos/Balance, gráfico de torta, próximos vencimientos, FAB "+"
+2. **Historial** (`/history`) — lista con filtros
+3. **Cargar transacción** (modal)
+4. **Presupuestos** (`/budgets`)
+5. **Deudas** (`/debts`) con simulador bola de nieve vs avalancha
+6. **Configuración** (`/settings`) — CRUD categorías/fijos, export JSON
 
-### 1. Dashboard (`/`)
-- Header con mes/año actual
-- 3 cards: Ingresos / Gastos / Balance
-- Gráfico de torta: gastos por categoría
-- "Te quedan X días y $Y disponibles"
-- Lista corta: próximos vencimientos
-- **Botón flotante "+" siempre visible**
-
-### 2. Historial (`/history`)
-- Filtros: mes, categoría, método de pago
-- Lista de transacciones (más recientes primero)
-- Tap en una transacción → editar/borrar
-- Total filtrado al final
-
-### 3. Cargar transacción (Modal, no es pantalla)
-- Input grande de monto (foco automático)
-- Selector de categoría (grilla con iconos)
-- Toggle: Gasto / Ingreso
-- Descripción opcional
-- Método de pago
-- Fecha (default: hoy)
-- Botón "Guardar"
-
-### 4. Presupuestos (`/budgets`)
-- Lista de categorías con barra de progreso
-- "Cenas: $24.000 / $30.000 (80%)" en amarillo
-- Rojo cuando > 100%
-- Tap → editar límite mensual
-
-### 5. Deudas (`/debts`)
-- Lista de deudas activas con monto restante
-- Card con "Total deuda: $X"
-- Simulador: "Si pagás $X/mes, salís en Y meses"
-- Comparación: estrategia bola de nieve vs avalancha
-- Botón "Registrar pago" en cada deuda
-
-### 6. Configuración (`/settings`)
-- Gestión de categorías (CRUD)
-- Gestión de gastos fijos
-- Gestión de ingresos recurrentes
-- Botón "Exportar datos a JSON" (backup)
-
----
-
-## 📅 Plan de los 3 días
+## 📅 Plan de los 3 días (Fase 1)
 
 ### Día 1 - Setup + Backbone
-**Mañana/Tarde:**
-- Crear proyecto: `vite + react`, `npm init` server
-- Configurar Tailwind, instalar dependencias
-- Schema SQL + seed de categorías iniciales
-- Setup Express + better-sqlite3
-- Endpoints básicos de `categories` y `transactions` (GET, POST)
-- Probar con Postman/Thunder Client
-
-**Noche:**
-- Layout principal del frontend (navegación, bottom bar)
-- Conectar frontend con backend (axios)
-- Página Dashboard básica (solo total del mes)
+- ✅ Vite + React + Tailwind
+- ✅ Schema SQL + seed
+- ✅ Express + endpoints básicos de categories y transactions
+- 🔨 Layout + bottom nav + Dashboard básico + conexión Axios
 
 ### Día 2 - Funcionalidad core
-**Mañana:**
-- Modal "Cargar transacción" funcional
-- Página de Historial con filtros
-- Endpoints restantes de transactions
-- Validaciones en frontend y backend
-
-**Tarde:**
-- CRUD de categorías completo
-- Página de presupuestos
-- Endpoint de status de presupuestos
-
-**Noche:**
+- Modal "Cargar transacción"
+- Historial con filtros
+- CRUD completo de categorías
+- Presupuestos + status
 - Gráficos en dashboard (Recharts)
-- Resumen del mes funcionando
 
 ### Día 3 - Deudas + Polish + Deploy
-**Mañana:**
-- CRUD de deudas
-- Simulador básico de deudas
-- Pantalla de deudas
-
-**Tarde:**
+- CRUD de deudas + simulador
 - Gastos fijos
-- Configuración PWA (manifest + service worker)
-- Testing manual de todo el flujo
-- Estilos finales
+- PWA (manifest + service worker)
+- Deploy Vercel + Railway
+- Cargar datos reales y usarla
 
-**Noche:**
-- Deploy frontend a Vercel
-- Deploy backend a Railway
-- Configurar volumen persistente para SQLite
-- Instalar la PWA en el celular
-- Cargar datos reales y empezar a usarla
+## ✅ Definición de MVP terminado (Fase 1)
 
----
-
-## ✅ Definición de "MVP terminado"
-
-El MVP está listo cuando:
-- [ ] Puedo cargar un gasto en menos de 10 segundos
-- [ ] Veo el total gastado del mes
-- [ ] Veo en qué categorías gasto más (gráfico)
-- [ ] Puedo definir presupuestos y ver si me paso
-- [ ] Puedo registrar mis deudas y simular pagos
-- [ ] Está instalada como PWA en mi celular
+- [ ] Cargar un gasto en menos de 10 segundos
+- [ ] Ver total gastado del mes
+- [ ] Ver gráfico de gastos por categoría
+- [ ] Definir presupuestos y ver si me paso
+- [ ] Registrar deudas y simular pagos
+- [ ] PWA instalada en celular
 - [ ] Funciona online (deployed)
 
----
-
-## 🚫 Lo que NO entra en el MVP (queda para v2)
+## 🚫 Fuera de Fase 1 (queda para v2/Fase 2/3)
 
 - ❌ Importación automática de PDFs de tarjeta
-- ❌ Sistema de login/auth
-- ❌ Múltiples usuarios
+- ❌ Login/auth
+- ❌ Multiusuario
 - ❌ Notificaciones push
-- ❌ Estadísticas históricas avanzadas (mes a mes, año a año)
-- ❌ Categorías subnivel (subcategorías)
-- ❌ Tags personalizados
-- ❌ Exportación a Excel/CSV
+- ❌ Stats históricas avanzadas (mes/año a año)
+- ❌ Subcategorías
+- ❌ Tags
+- ❌ Export Excel/CSV
+
+---
+
+# 🟡 Fase 2 — Vida (Hábitos)
+
+> **Condición de arranque:** Fase 1 deployada + 1-2 semanas de uso real. Si no se usó, no se construye.
+
+## 🎯 Los 5 trackers (todos < 30 seg/día combinados)
+
+| # | Tracker | Cómo se carga | Para qué sirve |
+|---|---|---|---|
+| 1 | **Sueño** | Al despertar: "dormí de X a Y" | Ver promedio semanal y noches de <6hs |
+| 2 | **Scroll nocturno** | Toggle "¿cel después de medianoche?" | Atacar el TikTok hasta las 3am |
+| 3 | **Comida** | 3 toggles (des/alm/cena): sano / medio / mal | Patrón semanal de alimentación |
+| 4 | **Movimiento** | 1 botón "hoy moví el cuerpo" | Días activos vs sedentarios |
+| 5 | **Intención del día** | Mañana: 1 frase. Noche: ¿la cumpliste? | Antídoto al "se me fue el día" |
+
+## 🗃️ Schema (Fase 2, borrador)
+
+```sql
+CREATE TABLE sleep_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date DATE NOT NULL UNIQUE,
+  slept_at TEXT NOT NULL,      -- HH:MM (hora de dormir)
+  woke_at TEXT NOT NULL,       -- HH:MM (hora de despertar)
+  hours_slept REAL,            -- calculado
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE screen_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date DATE NOT NULL UNIQUE,
+  late_night_phone BOOLEAN NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE meal_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date DATE NOT NULL,
+  meal TEXT NOT NULL,          -- 'desayuno' | 'almuerzo' | 'cena'
+  quality TEXT NOT NULL,       -- 'sano' | 'medio' | 'mal'
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(date, meal)
+);
+
+CREATE TABLE movement_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date DATE NOT NULL UNIQUE,
+  moved BOOLEAN NOT NULL,
+  notes TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE daily_intentions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date DATE NOT NULL UNIQUE,
+  intention TEXT NOT NULL,
+  accomplished BOOLEAN,        -- NULL = aún no respondido
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## 🔌 API Endpoints (Fase 2)
+
+- `GET/POST /api/sleep`
+- `GET/POST /api/screen`
+- `GET/POST /api/meals`
+- `GET/POST /api/movement`
+- `GET/POST /api/intentions`
+- `GET /api/vida/weekly` — resumen semanal (todos los trackers)
+- `GET /api/resumen/weekly` — **vista cruzada finanzas + vida** (la joya)
+
+## 📱 Pantallas (Fase 2)
+
+1. **Vida — Check-in diario** (`/vida`) — formulario combinado, < 30 seg
+2. **Vida — Resumen semanal** (`/vida/semanal`) — patrones de los 5 trackers
+3. **Resumen cruzado** (`/resumen`) — finanzas + vida juntas, semanal
+4. **Rachas** — componente en Dashboard mostrando streaks ("3 días sin cel después de medianoche")
+
+## ✅ Definición de MVP terminado (Fase 2)
+
+- [ ] Check-in diario de los 5 trackers en < 30 seg
+- [ ] Vista semanal con promedios y patrones
+- [ ] Vista cruzada finanzas ↔ vida (semanal + mensual)
+- [ ] Streaks visibles en Dashboard
+- [ ] Resumen del domingo (vista de "así estuvo tu semana")
+
+---
+
+# 🔵 Fase 3 — Multiusuario / Comunidad (a evaluar)
+
+> **Condición de arranque:** Fase 1+2 sostenidas como uso personal real durante 2-3 meses. Si no se sostiene para uno mismo, no exportar el problema.
+
+Cambios principales:
+- Tabla `users` + columna `user_id` en todas las tablas existentes
+- Auth: JWT o sesiones con cookie httpOnly
+- Migración SQLite → PostgreSQL (cuando supere ~100-200 usuarios reales)
+- Encriptación de datos sensibles (finanzas)
+- Posible comparativa anónima opcional con amigos (ej: "tu grupo durmió promedio 6h esta semana")
 
 ---
 
@@ -358,20 +389,20 @@ El MVP está listo cuando:
 - **Componentes React**: PascalCase
 - **Endpoints**: kebab-case en URLs (`/fixed-expenses`)
 - **Commits Git**: prefijo (`feat:`, `fix:`, `refactor:`, `style:`)
-- **Money**: siempre en número (REAL en SQL), formato visual en frontend
-
----
+- **Money**: siempre número (REAL en SQL), formato visual en frontend
 
 ## 🆘 Comandos importantes
 
 ```bash
-# Iniciar todo
+# Desarrollo (2 terminales en paralelo)
 cd client && npm run dev    # Frontend en :5173
-cd server && npm run dev    # Backend en :3000
+cd server && npm run dev    # Backend en :3000 (con --watch)
 
 # Build de producción
 cd client && npm run build
 
-# Reset de DB (cuidado!)
-rm server/db/finanzas.db && node server/db/init.js
+# Inicializar / resetear DB
+cd server && npm run init-db
+# Reset total (cuidado: borra todo):
+#   rm server/db/finanzas.db && npm run init-db
 ```
