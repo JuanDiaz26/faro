@@ -6,6 +6,7 @@ import {
 } from '../api/cards'
 import { useCategoriesStore } from '../store/categories'
 import { formatMoney, daysUntilNextDue } from '../utils/format'
+import BackButton from '../components/BackButton'
 import CardForm from '../components/CardForm'
 import ChargeForm from '../components/ChargeForm'
 import TransactionForm from '../components/TransactionForm'
@@ -107,8 +108,11 @@ export default function Cards() {
 
   return (
     <div className="p-4 space-y-3">
-      <header className="pt-4 flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Tarjetas</h1>
+      <header className="pt-4 flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <BackButton />
+          <h1 className="text-2xl font-bold text-slate-800">Tarjetas</h1>
+        </div>
         <button
           type="button"
           onClick={() => {

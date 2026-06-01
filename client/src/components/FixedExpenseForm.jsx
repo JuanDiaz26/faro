@@ -1,5 +1,6 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { useCategoriesStore } from '../store/categories'
+import useBodyScrollLock from '../hooks/useBodyScrollLock'
 import {
   createFixedExpense,
   updateFixedExpense,
@@ -94,6 +95,8 @@ export default function FixedExpenseForm({ open, onClose, onSaved, expense = nul
       setDeleting(false)
     }
   }
+
+  useBodyScrollLock(open)
 
   if (!open) return null
 

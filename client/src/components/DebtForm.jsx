@@ -1,5 +1,6 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { createDebt, updateDebt, deleteDebt } from '../api/debts'
+import useBodyScrollLock from '../hooks/useBodyScrollLock'
 
 // `debt` opcional → modo edición. Sin él, modo creación.
 export default function DebtForm({ open, onClose, onSaved, debt = null }) {
@@ -104,6 +105,8 @@ export default function DebtForm({ open, onClose, onSaved, debt = null }) {
       setDeleting(false)
     }
   }
+
+  useBodyScrollLock(open)
 
   if (!open) return null
 

@@ -1,5 +1,6 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { createCard, updateCard, deleteCard } from '../api/cards'
+import useBodyScrollLock from '../hooks/useBodyScrollLock'
 
 const PALETTE = ['#FF6B00', '#3b82f6', '#10b981', '#a855f7', '#ef4444', '#f59e0b', '#64748b']
 
@@ -89,6 +90,8 @@ export default function CardForm({ open, onClose, onSaved, card = null }) {
       setDeleting(false)
     }
   }
+
+  useBodyScrollLock(open)
 
   if (!open) return null
 

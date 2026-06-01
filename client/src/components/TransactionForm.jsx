@@ -7,6 +7,7 @@ import {
 } from '../api/transactions'
 import { todayLocalISO } from '../utils/format'
 import CategoryPicker from './CategoryPicker'
+import useBodyScrollLock from '../hooks/useBodyScrollLock'
 
 const PAYMENT_METHODS = [
   { id: 'cash', label: 'Efectivo', icon: '💵' },
@@ -126,6 +127,8 @@ export default function TransactionForm({
       setDeleting(false)
     }
   }
+
+  useBodyScrollLock(open)
 
   if (!open) return null
 

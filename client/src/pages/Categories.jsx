@@ -2,6 +2,7 @@
 import { useCategoriesStore } from '../store/categories'
 import CategoryForm from '../components/CategoryForm'
 import Fab from '../components/Fab'
+import BackButton from '../components/BackButton'
 
 export default function Categories() {
   const { categories, loading, error, fetch, refresh } = useCategoriesStore()
@@ -26,8 +27,11 @@ export default function Categories() {
 
   return (
     <div className="p-4 space-y-3">
-      <header className="pt-4 flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Categorías</h1>
+      <header className="pt-4 flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <BackButton />
+          <h1 className="text-2xl font-bold text-slate-800">Categorías</h1>
+        </div>
         <span className="text-xs text-slate-500">{categories.length} en total</span>
       </header>
 

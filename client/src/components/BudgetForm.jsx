@@ -1,5 +1,6 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { createBudget, updateBudget, deleteBudget } from '../api/budgets'
+import useBodyScrollLock from '../hooks/useBodyScrollLock'
 import { formatMoney } from '../utils/format'
 
 // `item` viene del endpoint /status: tiene category_id, monthly_limit, spent, budget_id.
@@ -25,6 +26,8 @@ export default function BudgetForm({ open, onClose, onSaved, item, month, year }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
+
+  useBodyScrollLock(open)
 
   if (!open || !item) return null
 

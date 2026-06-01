@@ -55,7 +55,7 @@ export default function SpendingChart({ categories }) {
     <div className="rounded-2xl bg-white p-4 shadow-sm">
       <h2 className="font-semibold text-slate-800">Gastos por categoría</h2>
 
-      <div className="mt-2 h-44">
+      <div className="mt-2 h-44 [&_*:focus]:outline-none [&_svg]:outline-none select-none">
         <ResponsiveContainer>
           <PieChart>
             <Pie
@@ -68,12 +68,19 @@ export default function SpendingChart({ categories }) {
               outerRadius={80}
               paddingAngle={2}
               isAnimationActive={false}
+              tabIndex={-1}
             >
               {data.map((entry) => (
-                <Cell key={entry.category_id} fill={entry.color} stroke="none" />
+                <Cell
+                  key={entry.category_id}
+                  fill={entry.color}
+                  stroke="none"
+                  tabIndex={-1}
+                  style={{ outline: 'none' }}
+                />
               ))}
             </Pie>
-            <Tooltip content={<ChartTooltip />} />
+            <Tooltip content={<ChartTooltip />} cursor={false} />
           </PieChart>
         </ResponsiveContainer>
       </div>

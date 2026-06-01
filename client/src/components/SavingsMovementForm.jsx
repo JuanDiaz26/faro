@@ -6,6 +6,7 @@ import {
   getGoals,
 } from '../api/savings'
 import { todayLocalISO } from '../utils/format'
+import useBodyScrollLock from '../hooks/useBodyScrollLock'
 
 const SOURCES = [
   { id: 'sueldo', label: 'Sueldo', icon: '💼' },
@@ -107,6 +108,8 @@ export default function SavingsMovementForm({
       setDeleting(false)
     }
   }
+
+  useBodyScrollLock(open)
 
   if (!open) return null
 

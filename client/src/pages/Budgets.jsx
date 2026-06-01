@@ -2,6 +2,7 @@
 import { getBudgetStatus } from '../api/budgets'
 import { formatMoney, formatMonth } from '../utils/format'
 import BudgetForm from '../components/BudgetForm'
+import BackButton from '../components/BackButton'
 
 // Devuelve "green" | "amber" | "red" | "none" según porcentaje gastado.
 function levelFor(pct, hasBudget) {
@@ -55,9 +56,12 @@ export default function Budgets() {
 
   return (
     <div className="p-4 space-y-3">
-      <header className="pt-4">
-        <h1 className="text-2xl font-bold text-slate-800">Presupuestos</h1>
-        <p className="text-sm text-slate-500">{formatMonth(now)}</p>
+      <header className="pt-4 flex items-center gap-1">
+        <BackButton />
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Presupuestos</h1>
+          <p className="text-sm text-slate-500">{formatMonth(now)}</p>
+        </div>
       </header>
 
       {loading && <div className="text-slate-500 text-sm">Cargando…</div>}

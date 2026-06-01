@@ -4,6 +4,7 @@ import { formatMoney, daysUntilNextDue } from '../utils/format'
 import FixedExpenseForm from '../components/FixedExpenseForm'
 import TransactionForm from '../components/TransactionForm'
 import Fab from '../components/Fab'
+import BackButton from '../components/BackButton'
 
 export default function FixedExpenses() {
   const [items, setItems] = useState([])
@@ -45,8 +46,11 @@ export default function FixedExpenses() {
 
   return (
     <div className="p-4 space-y-3">
-      <header className="pt-4 flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Gastos Fijos</h1>
+      <header className="pt-4 flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <BackButton />
+          <h1 className="text-2xl font-bold text-slate-800">Gastos Fijos</h1>
+        </div>
         {items.length > 0 && (
           <span className="text-xs text-slate-500">
             {items.length} activo{items.length === 1 ? '' : 's'}

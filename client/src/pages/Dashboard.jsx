@@ -109,14 +109,19 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 space-y-4">
-      <header className="pt-4 flex items-baseline justify-between">
+      <header className="pt-4 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-navy-900">{formatMonth(now)}</h1>
           <p className="text-sm text-slate-500">Quedan {daysLeftInMonth(now)} días del mes</p>
         </div>
-        <span className="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-semibold">
-          Faro
-        </span>
+        <div className="flex items-center gap-2">
+          <img
+            src="/faro-icon.png"
+            alt="Faro"
+            className="w-9 h-9 rounded-xl shadow-sm"
+          />
+          <span className="text-base font-bold tracking-tight text-navy-900">Faro</span>
+        </div>
       </header>
 
       {!loading && !error && (

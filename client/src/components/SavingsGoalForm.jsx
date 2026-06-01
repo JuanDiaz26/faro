@@ -1,5 +1,6 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { createGoal, updateGoal, deleteGoal } from '../api/savings'
+import useBodyScrollLock from '../hooks/useBodyScrollLock'
 
 const PALETTE = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7', '#ec4899', '#14b8a6']
 
@@ -94,6 +95,8 @@ export default function SavingsGoalForm({ open, onClose, onSaved, goal = null })
       setDeleting(false)
     }
   }
+
+  useBodyScrollLock(open)
 
   if (!open) return null
 

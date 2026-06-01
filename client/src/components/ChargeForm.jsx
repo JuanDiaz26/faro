@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { createCharge, updateCharge, deleteCharge } from '../api/cards'
 import { todayLocalISO } from '../utils/format'
+import useBodyScrollLock from '../hooks/useBodyScrollLock'
 
 // `charge` para modo edición. `cardId` requerido siempre.
 export default function ChargeForm({ open, onClose, onSaved, cardId, charge = null }) {
@@ -111,6 +112,8 @@ export default function ChargeForm({ open, onClose, onSaved, cardId, charge = nu
       setDeleting(false)
     }
   }
+
+  useBodyScrollLock(open)
 
   if (!open) return null
 
