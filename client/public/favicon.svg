@@ -4,34 +4,28 @@
       <stop offset="0" stop-color="#0B1733"/>
       <stop offset="1" stop-color="#152347"/>
     </linearGradient>
-    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#FBBF24" stop-opacity="0.85"/>
-      <stop offset="1" stop-color="#FBBF24" stop-opacity="0"/>
-    </linearGradient>
-    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#FEF3C7"/>
-      <stop offset="0.6" stop-color="#FBBF24"/>
-      <stop offset="1" stop-color="#F59E0B"/>
-    </radialGradient>
   </defs>
-
   <rect width="512" height="512" rx="96" fill="url(#sky)"/>
-
-  <path d="M256 200 L 512 110 L 512 290 Z" fill="url(#beam)"/>
-  <path d="M256 200 L 0 130 L 0 270 Z" fill="url(#beam)" transform="matrix(-1 0 0 1 512 0)" opacity="0.55"/>
-
-  <rect x="160" y="400" width="192" height="48" rx="6" fill="#F1F5F9"/>
-  <rect x="180" y="384" width="152" height="20" fill="#F1F5F9"/>
-
-  <path d="M188 384 L 200 280 L 312 280 L 324 384 Z" fill="#F1F5F9"/>
-  <path d="M193 340 L 319 340 L 322 372 L 190 372 Z" fill="#E11D48"/>
-
-  <rect x="216" y="220" width="80" height="60" fill="#F1F5F9"/>
-  <rect x="204" y="208" width="104" height="14" rx="3" fill="#F1F5F9"/>
-
-  <rect x="220" y="166" width="72" height="44" rx="4" fill="#0B1733" stroke="#F1F5F9" stroke-width="4"/>
-  <circle cx="256" cy="188" r="14" fill="url(#lamp)"/>
-
-  <path d="M210 166 L 256 130 L 302 166 Z" fill="#F1F5F9"/>
-  <rect x="252" y="110" width="8" height="22" fill="#F1F5F9"/>
+  <!-- Haz izquierdo -->
+  <path d="M170 190 L 50 150 L 50 240 Z" fill="#FBBF24"/>
+  <!-- Haz derecho -->
+  <path d="M342 190 L 462 150 L 462 240 Z" fill="#FBBF24"/>
+  <!-- Linterna -->
+  <rect x="216" y="158" width="80" height="56" rx="6" fill="#FFFFFF"/>
+  <!-- Techo -->
+  <path d="M204 158 L 256 110 L 308 158 Z" fill="#FFFFFF"/>
+  <!-- Antena -->
+  <rect x="250" y="92" width="12" height="22" rx="2" fill="#FFFFFF"/>
+  <!-- Plataforma -->
+  <rect x="200" y="214" width="112" height="14" rx="3" fill="#FFFFFF"/>
+  <!-- Torre superior con franjas -->
+  <rect x="216" y="228" width="80" height="64" fill="#FFFFFF"/>
+  <rect x="216" y="248" width="80" height="10" fill="#0B1733"/>
+  <rect x="216" y="272" width="80" height="10" fill="#0B1733"/>
+  <!-- Torre inferior trapecio -->
+  <path d="M196 292 L 316 292 L 332 400 L 180 400 Z" fill="#FFFFFF"/>
+  <!-- Puerta -->
+  <rect x="240" y="350" width="32" height="50" rx="14" fill="#0B1733"/>
+  <!-- Base -->
+  <rect x="164" y="400" width="184" height="32" rx="6" fill="#FFFFFF"/>
 </svg>

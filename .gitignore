@@ -10,6 +10,15 @@ dist/
 *.db-wal
 *.db-shm
 
+# Backups personales con data financiera real — NUNCA al repo público
+*-backup-*.json
+faro-backup-*.json
+eje-backup-*.json
+/backups/
+
+# Logo suelto en la raíz (el deployable vive en client/public/faro-icon.png).
+/Logo-Faro.png
+
 # Variables de entorno
 .env
 .env.local
