@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { getTransactions } from '../api/transactions'
 import { useCategoriesStore } from '../store/categories'
 import { formatMoney, isoFromDate } from '../utils/format'
@@ -147,7 +147,7 @@ export default function History() {
       {/* Lista */}
       {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
       {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}
 
       {!loading && !error && (
@@ -183,7 +183,7 @@ export default function History() {
                     </div>
                     <div
                       className={`font-bold whitespace-nowrap ${
-                        t.type === 'income' ? 'text-emerald-600' : 'text-red-500'
+                        t.type === 'income' ? 'text-emerald-600' : 'text-rose-500'
                       }`}
                     >
                       {t.type === 'income' ? '+' : '−'} {formatMoney(t.amount)}
@@ -210,7 +210,7 @@ export default function History() {
               {gastos > 0 && (
                 <div className="flex justify-between">
                   <span className="text-slate-600">Gastos</span>
-                  <span className="text-red-500 font-semibold">
+                  <span className="text-rose-500 font-semibold">
                     {formatMoney(gastos)}
                   </span>
                 </div>
@@ -219,7 +219,7 @@ export default function History() {
                 <span className="text-slate-700 font-semibold">Balance</span>
                 <span
                   className={`font-bold ${
-                    total >= 0 ? 'text-emerald-600' : 'text-red-500'
+                    total >= 0 ? 'text-emerald-600' : 'text-rose-500'
                   }`}
                 >
                   {formatMoney(total)}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import { getGoals, getMovements, getSavingsSummary } from '../api/savings'
 import { formatMoney, formatMonth } from '../utils/format'
 import SavingsGoalForm from '../components/SavingsGoalForm'
@@ -64,7 +64,7 @@ export default function Savings() {
             setEditingGoal(null)
             setGoalFormOpen(true)
           }}
-          className="text-xs text-emerald-600 font-semibold"
+          className="text-xs text-beam-600 font-semibold"
         >
           + Nueva meta
         </button>
@@ -72,7 +72,7 @@ export default function Savings() {
 
       {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
       {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}
 
       {!loading && !error && (
@@ -101,7 +101,7 @@ export default function Savings() {
             </h2>
             {goals.length === 0 ? (
               <div className="rounded-2xl bg-white p-4 text-center text-sm text-slate-500 shadow-sm">
-                Todavía no tenés metas. Tocá <span className="font-semibold text-emerald-600">+ Nueva meta</span> y armá tu primera (moto, compu, viaje…).
+                Todavía no tenés metas. Tocá <span className="font-semibold text-beam-600">+ Nueva meta</span> y armá tu primera (moto, compu, viaje…).
               </div>
             ) : (
               <ul className="space-y-2">

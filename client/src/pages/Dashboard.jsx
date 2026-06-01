@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getMonthlySummary, getTotalBalance } from '../api/transactions'
 import { getDebts } from '../api/debts'
@@ -109,35 +109,55 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 space-y-4">
-      <header className="pt-4">
-        <h1 className="text-2xl font-bold text-slate-800">{formatMonth(now)}</h1>
-        <p className="text-sm text-slate-500">Quedan {daysLeftInMonth(now)} días del mes</p>
+      <header className="pt-4 flex items-baseline justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-navy-900">{formatMonth(now)}</h1>
+          <p className="text-sm text-slate-500">Quedan {daysLeftInMonth(now)} días del mes</p>
+        </div>
+        <span className="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-semibold">
+          Faro
+        </span>
       </header>
 
       {!loading && !error && (
-        <div className="rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-5 text-white shadow-sm">
-          <div className="text-xs text-slate-300">Saldo disponible</div>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy-900 via-navy-800 to-navy-700 p-5 text-white shadow-lg ring-1 ring-navy-700/40">
+          {/* Beam decorativo — el haz del faro */}
           <div
-            className={`mt-1 text-3xl font-bold ${
-              totalBalance.balance - savings.total_saved >= 0 ? 'text-white' : 'text-red-300'
-            }`}
-          >
-            {formatMoney(totalBalance.balance - savings.total_saved)}
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
-            <span>
-              Balance neto:{' '}
-              <span className="font-semibold text-slate-200">
-                {formatMoney(totalBalance.balance)}
-              </span>
-            </span>
-            {savings.total_saved > 0 && (
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-10 -top-12 h-44 w-44 rounded-full bg-beam-500/25 blur-3xl"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute right-4 top-4 h-2 w-2 rounded-full bg-beam-400 shadow-[0_0_16px_4px_rgba(251,191,36,0.6)]"
+          />
+
+          <div className="relative">
+            <div className="text-[11px] uppercase tracking-wider text-navy-200/80 font-semibold">
+              Saldo disponible
+            </div>
+            <div
+              className={`mt-1 text-3xl font-bold ${
+                totalBalance.balance - savings.total_saved >= 0 ? 'text-white' : 'text-rose-300'
+              }`}
+            >
+              {formatMoney(totalBalance.balance - savings.total_saved)}
+            </div>
+            <div className="mt-3 flex items-center justify-between text-[11px] text-navy-200/70">
               <span>
-                Ahorro: <span className="font-semibold text-emerald-300">
-                  −{formatMoney(savings.total_saved)}
+                Balance neto:{' '}
+                <span className="font-semibold text-white/90">
+                  {formatMoney(totalBalance.balance)}
                 </span>
               </span>
-            )}
+              {savings.total_saved > 0 && (
+                <span>
+                  Ahorro:{' '}
+                  <span className="font-semibold text-emerald-300">
+                    −{formatMoney(savings.total_saved)}
+                  </span>
+                </span>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -145,7 +165,7 @@ export default function Dashboard() {
       {loading && <div className="text-slate-500">Cargando…</div>}
 
       {error && (
-        <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">
           <div className="font-semibold">No se pudo conectar con la API</div>
           <div className="mt-1 text-xs opacity-80">{error}</div>
           <div className="mt-2 text-xs opacity-80">¿El server está corriendo en :3000?</div>
@@ -160,11 +180,11 @@ export default function Dashboard() {
             </h2>
             <div className="grid grid-cols-3 gap-2">
               <StatCard label="Ingresos" amount={summary.ingresos} color="text-emerald-600" />
-              <StatCard label="Gastos" amount={summary.gastos} color="text-red-500" />
+              <StatCard label="Gastos" amount={summary.gastos} color="text-rose-500" />
               <StatCard
                 label="Balance"
                 amount={summary.balance}
-                color={summary.balance >= 0 ? 'text-emerald-600' : 'text-red-500'}
+                color={summary.balance >= 0 ? 'text-emerald-600' : 'text-rose-500'}
               />
             </div>
           </div>
@@ -184,7 +204,7 @@ export default function Dashboard() {
           {budgetStatus.over_budget_count > 0 && (
             <Link
               to="/budgets"
-              className="block rounded-2xl bg-red-50 border border-red-100 p-3 text-sm text-red-700 active:scale-[0.99] transition-transform"
+              className="block rounded-2xl bg-rose-50 border border-rose-100 p-3 text-sm text-rose-700 active:scale-[0.99] transition-transform"
             >
               <div className="flex items-center justify-between">
                 <span>
@@ -192,7 +212,7 @@ export default function Dashboard() {
                     {budgetStatus.over_budget_count} categoría{budgetStatus.over_budget_count === 1 ? '' : 's'}
                   </span> excediendo el presupuesto
                 </span>
-                <span className="text-red-400">›</span>
+                <span className="text-rose-400">›</span>
               </div>
             </Link>
           )}
@@ -228,7 +248,7 @@ export default function Dashboard() {
                   className={`text-base font-bold ${
                     summary.balance - savings.month_saved >= 0
                       ? 'text-emerald-600'
-                      : 'text-red-500'
+                      : 'text-rose-500'
                   }`}
                 >
                   {formatMoney(summary.balance - savings.month_saved)}
@@ -266,7 +286,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </div>
-                      <div className="text-sm font-bold text-red-500 whitespace-nowrap">
+                      <div className="text-sm font-bold text-rose-500 whitespace-nowrap">
                         {formatMoney(u.amount)}
                       </div>
                     </Link>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { useCategoriesStore } from '../store/categories'
 import {
   createTransaction,
@@ -155,7 +155,7 @@ export default function TransactionForm({
 
         <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
           {[
-            { v: 'expense', label: 'Gasto', activeClass: 'bg-red-500' },
+            { v: 'expense', label: 'Gasto', activeClass: 'bg-rose-500' },
             { v: 'income', label: 'Ingreso', activeClass: 'bg-emerald-500' },
           ].map((t) => (
             <button
@@ -253,7 +253,7 @@ export default function TransactionForm({
         </div>
 
         {error && (
-          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          <div className="mt-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
         )}
 
         <div className="mt-6 space-y-2">
@@ -268,7 +268,7 @@ export default function TransactionForm({
             <button
               type="submit"
               disabled={!canSubmit}
-              className="py-3 rounded-xl bg-emerald-500 text-white font-semibold disabled:bg-slate-300 disabled:cursor-not-allowed"
+              className="py-3 rounded-xl bg-beam-500 text-white font-semibold shadow-beam disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
             >
               {submitting ? 'Guardando…' : isEditing ? 'Actualizar' : 'Guardar'}
             </button>
@@ -279,7 +279,7 @@ export default function TransactionForm({
               type="button"
               onClick={handleDelete}
               disabled={deleting || submitting}
-              className="w-full py-2 text-sm text-red-600 font-semibold disabled:opacity-50"
+              className="w-full py-2 text-sm text-rose-600 font-semibold disabled:opacity-50"
             >
               {deleting ? 'Borrando…' : '🗑 Borrar transacción'}
             </button>

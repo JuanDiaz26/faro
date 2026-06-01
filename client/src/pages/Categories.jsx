@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useCategoriesStore } from '../store/categories'
 import CategoryForm from '../components/CategoryForm'
 import Fab from '../components/Fab'
@@ -33,14 +33,14 @@ export default function Categories() {
 
       {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
       {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}
 
       {!loading && !error && (
         <>
           <Section
             title="Gastos"
-            color="text-red-500"
+            color="text-rose-500"
             items={expenses}
             onItemClick={openEdit}
             emptyMsg="Sin categorías de gasto."

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import { getBudgetStatus } from '../api/budgets'
 import { formatMoney, formatMonth } from '../utils/format'
 import BudgetForm from '../components/BudgetForm'
@@ -14,13 +14,13 @@ function levelFor(pct, hasBudget) {
 const BAR_COLOR = {
   green: 'bg-emerald-500',
   amber: 'bg-amber-500',
-  red: 'bg-red-500',
+  red: 'bg-rose-500',
 }
 
 const TEXT_COLOR = {
   green: 'text-emerald-600',
   amber: 'text-amber-600',
-  red: 'text-red-600',
+  red: 'text-rose-600',
 }
 
 export default function Budgets() {
@@ -62,7 +62,7 @@ export default function Budgets() {
 
       {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
       {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}
 
       {!loading && !error && status && (
@@ -73,7 +73,7 @@ export default function Budgets() {
               <div className="flex items-baseline justify-between">
                 <div className="text-xs text-slate-300">Total gastado / presupuestado</div>
                 {status.over_budget_count > 0 && (
-                  <div className="text-[10px] bg-red-500/20 text-red-200 px-2 py-0.5 rounded-full">
+                  <div className="text-[10px] bg-rose-500/20 text-red-200 px-2 py-0.5 rounded-full">
                     🚨 {status.over_budget_count} excedidas
                   </div>
                 )}
@@ -87,7 +87,7 @@ export default function Budgets() {
               <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden">
                 <div
                   className={`h-full ${
-                    totalPct >= 100 ? 'bg-red-500' : totalPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'
+                    totalPct >= 100 ? 'bg-rose-500' : totalPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'
                   }`}
                   style={{ width: `${Math.min(100, totalPct)}%` }}
                 />
@@ -176,7 +176,7 @@ function BudgetCard({ item, onClick }) {
           <span>
             {formatMoney(item.spent)} de {formatMoney(item.monthly_limit)}
           </span>
-          <span className={remaining < 0 ? 'text-red-600 font-semibold' : ''}>
+          <span className={remaining < 0 ? 'text-rose-600 font-semibold' : ''}>
             {remaining >= 0
               ? `Quedan ${formatMoney(remaining)}`
               : `Excedido en ${formatMoney(-remaining)}`}
@@ -204,7 +204,7 @@ function UnbudgetedCard({ item, onClick }) {
             </div>
           </div>
         </div>
-        <span className="text-xs text-emerald-600 font-semibold">Definir →</span>
+        <span className="text-xs text-beam-600 font-semibold">Definir →</span>
       </button>
     </li>
   )

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { createBudget, updateBudget, deleteBudget } from '../api/budgets'
 import { formatMoney } from '../utils/format'
 
@@ -137,7 +137,7 @@ export default function BudgetForm({ open, onClose, onSaved, item, month, year }
         {limitNum > 0 && (
           <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm">
             {wouldExceed ? (
-              <div className="text-red-600 font-medium">
+              <div className="text-rose-600 font-medium">
                 ⚠ Ya excediste este límite por {formatMoney(spent - limitNum)}
               </div>
             ) : (
@@ -150,7 +150,7 @@ export default function BudgetForm({ open, onClose, onSaved, item, month, year }
         )}
 
         {error && (
-          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          <div className="mt-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
         )}
 
         <div className="mt-6 space-y-2">
@@ -165,7 +165,7 @@ export default function BudgetForm({ open, onClose, onSaved, item, month, year }
             <button
               type="submit"
               disabled={!canSubmit}
-              className="py-3 rounded-xl bg-emerald-500 text-white font-semibold disabled:bg-slate-300 disabled:cursor-not-allowed"
+              className="py-3 rounded-xl bg-beam-500 text-white font-semibold shadow-beam disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
             >
               {submitting ? 'Guardando…' : isEditing ? 'Actualizar' : 'Guardar'}
             </button>
@@ -176,7 +176,7 @@ export default function BudgetForm({ open, onClose, onSaved, item, month, year }
               type="button"
               onClick={handleDelete}
               disabled={deleting || submitting}
-              className="w-full py-2 text-sm text-red-600 font-semibold disabled:opacity-50"
+              className="w-full py-2 text-sm text-rose-600 font-semibold disabled:opacity-50"
             >
               {deleting ? 'Quitando…' : '🗑 Quitar presupuesto'}
             </button>

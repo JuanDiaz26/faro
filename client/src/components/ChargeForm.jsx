@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { createCharge, updateCharge, deleteCharge } from '../api/cards'
 import { todayLocalISO } from '../utils/format'
 
@@ -247,7 +247,7 @@ export default function ChargeForm({ open, onClose, onSaved, cardId, charge = nu
         )}
 
         {error && (
-          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          <div className="mt-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
         )}
 
         <div className="mt-6 space-y-2">
@@ -262,7 +262,7 @@ export default function ChargeForm({ open, onClose, onSaved, cardId, charge = nu
             <button
               type="submit"
               disabled={!canSubmit}
-              className="py-3 rounded-xl bg-emerald-500 text-white font-semibold disabled:bg-slate-300 disabled:cursor-not-allowed"
+              className="py-3 rounded-xl bg-beam-500 text-white font-semibold shadow-beam disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
             >
               {submitting ? 'Guardando…' : isEditing ? 'Actualizar' : 'Guardar'}
             </button>
@@ -273,7 +273,7 @@ export default function ChargeForm({ open, onClose, onSaved, cardId, charge = nu
               type="button"
               onClick={handleDelete}
               disabled={deleting || submitting}
-              className="w-full py-2 text-sm text-red-600 font-semibold disabled:opacity-50"
+              className="w-full py-2 text-sm text-rose-600 font-semibold disabled:opacity-50"
             >
               {deleting ? 'Borrando…' : '🗑 Borrar cargo'}
             </button>

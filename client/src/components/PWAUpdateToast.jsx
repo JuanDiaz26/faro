@@ -36,7 +36,7 @@ export default function PWAUpdateToast() {
           <button
             type="button"
             onClick={() => updateServiceWorker(true)}
-            className="shrink-0 bg-emerald-500 active:scale-95 transition-transform text-white text-xs font-semibold px-3 py-1.5 rounded-full"
+            className="shrink-0 bg-beam-500 active:scale-95 transition-transform text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-beam"
           >
             Actualizar
           </button>

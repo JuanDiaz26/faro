@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import { getFixedExpenses } from '../api/fixedExpenses'
 import { formatMoney, daysUntilNextDue } from '../utils/format'
 import FixedExpenseForm from '../components/FixedExpenseForm'
@@ -56,7 +56,7 @@ export default function FixedExpenses() {
 
       {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
       {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}
 
       {!loading && !error && (
@@ -72,7 +72,7 @@ export default function FixedExpenses() {
             <div className="rounded-2xl bg-white p-6 text-center text-sm text-slate-500 shadow-sm">
               No tenés gastos fijos cargados.
               <br />
-              Tocá <span className="font-semibold text-emerald-600">+</span> para agregar
+              Tocá <span className="font-semibold text-beam-600">+</span> para agregar
               tu alquiler, telefonía, suscripciones, etc.
             </div>
           ) : (
@@ -106,13 +106,13 @@ export default function FixedExpenses() {
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <div className="font-bold text-red-500">
+                          <div className="font-bold text-rose-500">
                             {formatMoney(x.amount)}
                           </div>
                           <button
                             type="button"
                             onClick={(e) => handlePay(x, e)}
-                            className="mt-1 text-[11px] bg-emerald-500 text-white px-2 py-1 rounded-full font-semibold active:scale-95"
+                            className="mt-1 text-[11px] bg-beam-500 text-white px-2.5 py-1 rounded-full font-semibold active:scale-95 shadow-beam"
                           >
                             Pagar
                           </button>

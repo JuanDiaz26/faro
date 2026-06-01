@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { exportBackup, importBackup } from '../api/backup'
 
@@ -197,7 +197,7 @@ export default function Settings() {
         <div className="fixed inset-x-0 bottom-24 z-40 px-4 pointer-events-none">
           <div
             className={`max-w-md mx-auto rounded-2xl shadow-lg p-3 text-sm text-white ${
-              toast.kind === 'ok' ? 'bg-emerald-600' : 'bg-red-600'
+              toast.kind === 'ok' ? 'bg-emerald-600' : 'bg-rose-600'
             }`}
           >
             {toast.msg}

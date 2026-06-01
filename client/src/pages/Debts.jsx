@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import { getDebts } from '../api/debts'
 import { formatMoney, daysUntilNextDue } from '../utils/format'
 import DebtForm from '../components/DebtForm'
@@ -39,7 +39,7 @@ export default function Debts() {
 
       {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
       {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}
 
       {!loading && !error && (
@@ -55,7 +55,7 @@ export default function Debts() {
             <div className="rounded-2xl bg-white p-6 text-center text-sm text-slate-500 shadow-sm">
               No tenés deudas cargadas todavía.
               <br />
-              Tocá el botón <span className="font-semibold text-emerald-600">+</span> para
+              Tocá el botón <span className="font-semibold text-beam-600">+</span> para
               agregar tu tarjeta o préstamo.
             </div>
           ) : (
@@ -107,7 +107,7 @@ function DebtCard({ debt, onClick }) {
           )}
         </div>
 
-        <div className="text-2xl font-bold text-red-500">
+        <div className="text-2xl font-bold text-rose-500">
           {formatMoney(debt.remaining_amount)}
         </div>
 

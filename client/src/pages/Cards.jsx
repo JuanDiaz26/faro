@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import {
   getCards,
   getCharges,
@@ -115,7 +115,7 @@ export default function Cards() {
             setEditingCard(null)
             setCardFormOpen(true)
           }}
-          className="text-xs text-emerald-600 font-semibold"
+          className="text-xs text-beam-600 font-semibold"
         >
           + Nueva tarjeta
         </button>
@@ -123,7 +123,7 @@ export default function Cards() {
 
       {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
       {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}
 
       {!loading && !error && (
@@ -132,7 +132,7 @@ export default function Cards() {
             <div className="rounded-2xl bg-white p-6 text-center text-sm text-slate-500 shadow-sm">
               No tenés tarjetas cargadas todavía.
               <br />
-              Tocá <span className="font-semibold text-emerald-600">+ Nueva tarjeta</span> para
+              Tocá <span className="font-semibold text-beam-600">+ Nueva tarjeta</span> para
               empezar a trackear tu próximo resumen.
             </div>
           ) : (
@@ -253,7 +253,7 @@ function CardSection({ card, charges, onEditCard, onAddCharge, onEditCharge, onP
         <button
           type="button"
           onClick={onAddCharge}
-          className="py-3 text-xs font-semibold text-emerald-600 active:bg-slate-50"
+          className="py-3 text-xs font-semibold text-beam-600 active:bg-slate-50"
         >
           + Cargo
         </button>

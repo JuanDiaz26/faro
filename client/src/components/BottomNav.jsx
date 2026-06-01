@@ -10,7 +10,7 @@ const TABS = [
 
 export default function BottomNav() {
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-10 bg-white border-t border-slate-200">
+    <nav className="fixed bottom-0 inset-x-0 z-10 bg-white/95 backdrop-blur border-t border-slate-200">
       <ul className="grid grid-cols-5 max-w-md mx-auto">
         {TABS.map((t) => (
           <li key={t.to}>
@@ -18,13 +18,26 @@ export default function BottomNav() {
               to={t.to}
               end={t.to === '/'}
               className={({ isActive }) =>
-                `flex flex-col items-center py-2 text-xs transition-colors ${
-                  isActive ? 'text-emerald-600 font-semibold' : 'text-slate-500'
+                `relative flex flex-col items-center py-2.5 text-[11px] transition-colors ${
+                  isActive ? 'text-beam-600 font-semibold' : 'text-slate-400'
                 }`
               }
             >
-              <span className="text-xl leading-none">{t.icon}</span>
-              <span className="mt-1">{t.label}</span>
+              {({ isActive }) => (
+                <>
+                  {/* Beam indicator — luz superior en el tab activo */}
+                  {isActive && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-0 inset-x-3 h-0.5 rounded-full bg-beam-500 shadow-beam"
+                    />
+                  )}
+                  <span className={`text-xl leading-none transition-transform ${isActive ? 'scale-110' : ''}`}>
+                    {t.icon}
+                  </span>
+                  <span className="mt-1">{t.label}</span>
+                </>
+              )}
             </NavLink>
           </li>
         ))}
