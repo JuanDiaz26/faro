@@ -4,11 +4,12 @@
   "description": "Faro — finanzas personales + hábitos. Monorepo: client (Vite/React) + server (Express/SQLite).",
   "private": true,
   "scripts": {
-    "build": "npm --prefix client install && npm --prefix client run build && npm --prefix server install",
+    "build": "npm --prefix client run build",
     "start": "node server/server.js",
     "dev:server": "npm --prefix server run dev",
     "dev:client": "npm --prefix client run dev",
-    "init-db": "npm --prefix server run init-db"
+    "init-db": "npm --prefix server run init-db",
+    "comment-install": "Para instalar deps: cd client && npm install && cd ../server && npm install"
   },
   "engines": {
     "node": ">=22.3.0"
