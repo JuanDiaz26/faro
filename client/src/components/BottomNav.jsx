@@ -10,7 +10,10 @@ const TABS = [
 
 export default function BottomNav() {
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-10 bg-white/95 backdrop-blur border-t border-slate-200">
+    <nav
+      className="fixed bottom-0 inset-x-0 z-10 bg-white/95 backdrop-blur border-t border-slate-200"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+    >
       <ul className="grid grid-cols-5 max-w-md mx-auto">
         {TABS.map((t) => (
           <li key={t.to}>
@@ -25,7 +28,6 @@ export default function BottomNav() {
             >
               {({ isActive }) => (
                 <>
-                  {/* Beam indicator — luz superior en el tab activo */}
                   {isActive && (
                     <span
                       aria-hidden="true"

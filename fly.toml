@@ -3,8 +3,8 @@
 # (si "faro" está tomado: faro-tunombre, mi-faro, etc.).
 # Región eze = Ezeiza (Buenos Aires) → latencia baja para AR.
 
-app = "faro"
-primary_region = "eze"
+app = "mi-faro"
+primary_region = "gru"
 
 [build]
   dockerfile = "Dockerfile"

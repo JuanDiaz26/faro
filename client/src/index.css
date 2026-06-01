@@ -4,10 +4,25 @@
 
 :root {
   color-scheme: light;
+  /* Safe area para notch / Dynamic Island / Android gestures */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
 }
 
 body {
   margin: 0;
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* Respeta la zona de status bar en iOS/Android */
+  padding-top: var(--sat);
+}
+
+/* Transición suave al navegar entre pestañas */
+.page-enter {
+  animation: fadeSlideIn 0.15s ease-out;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
