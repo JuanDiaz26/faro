@@ -1,7 +1,12 @@
 // FAB con identidad Faro: amber beacon + sombra cálida.
+// El bottom descuenta la safe-area inferior (home indicator iOS) para
+// que en la PWA instalada no quede pisando el bottom nav.
 export default function Fab({ onClick, label = 'Agregar' }) {
   return (
-    <div className="fixed bottom-20 inset-x-0 z-20 pointer-events-none">
+    <div
+      className="fixed inset-x-0 z-20 pointer-events-none"
+      style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}
+    >
       <div className="max-w-md mx-auto relative h-0">
         <button
           type="button"

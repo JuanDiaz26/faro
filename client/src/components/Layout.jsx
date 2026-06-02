@@ -11,7 +11,12 @@ export default function Layout() {
         className="fixed top-0 inset-x-0 z-30 bg-slate-50"
         style={{ height: 'env(safe-area-inset-top, 0px)' }}
       />
-      <div className="max-w-md mx-auto pb-28 page-enter">
+      {/* El padding-top empuja el contenido debajo del notch en modo PWA.
+          inline style → no depende del purge de Tailwind, garantizado en standalone. */}
+      <div
+        className="max-w-md mx-auto pb-28"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
         <Outlet />
       </div>
       <BottomNav />
