@@ -109,7 +109,7 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 space-y-4">
-      <header className="pt-4 flex items-center justify-between">
+      <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-navy-900">{formatMonth(now)}</h1>
           <p className="text-sm text-slate-500">Quedan {daysLeftInMonth(now)} días del mes</p>

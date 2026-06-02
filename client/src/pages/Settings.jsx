@@ -116,7 +116,7 @@ export default function Settings() {
 
   return (
     <div className="p-4 space-y-3">
-      <header className="pt-4">
+      <header className="pt-1">
         <h1 className="text-2xl font-bold text-slate-800">Más</h1>
         <p className="text-sm text-slate-500">Configuración y gestión</p>
       </header>

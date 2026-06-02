@@ -28,7 +28,7 @@ export default function Debts() {
 
   return (
     <div className="p-4 space-y-3">
-      <header className="pt-4 flex items-baseline justify-between">
+      <header className="flex items-baseline justify-between">
         <h1 className="text-2xl font-bold text-slate-800">Deudas</h1>
         {debts.length > 0 && (
           <span className="text-xs text-slate-500">

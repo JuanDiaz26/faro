@@ -27,7 +27,7 @@ export default function Categories() {
 
   return (
     <div className="p-4 space-y-3">
-      <header className="pt-4 flex items-center justify-between">
+      <header className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <BackButton />
           <h1 className="text-2xl font-bold text-slate-800">Categorías</h1>
