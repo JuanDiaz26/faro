@@ -8,6 +8,7 @@ import {
 import { todayLocalISO } from '../utils/format'
 import CategoryPicker from './CategoryPicker'
 import useBodyScrollLock from '../hooks/useBodyScrollLock'
+import { useUIStore } from '../store/ui'
 
 const PAYMENT_METHODS = [
   { id: 'cash', label: 'Efectivo', icon: '💵' },
@@ -114,7 +115,13 @@ export default function TransactionForm({
 
   const handleDelete = async () => {
     if (!isEditing) return
-    if (!window.confirm('¿Borrar esta transacción? No se puede deshacer.')) return
+    const ok = await useUIStore.getState().confirm({
+      title: 'Borrar transacción',
+      message: 'No se puede deshacer.',
+      confirmText: 'Borrar',
+      danger: true,
+    })
+    if (!ok) return
     setDeleting(true)
     setError(null)
     try {

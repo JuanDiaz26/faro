@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { useCategoriesStore } from '../store/categories'
 import useBodyScrollLock from '../hooks/useBodyScrollLock'
+import { useUIStore } from '../store/ui'
 import {
   createFixedExpense,
   updateFixedExpense,
@@ -82,7 +83,13 @@ export default function FixedExpenseForm({ open, onClose, onSaved, expense = nul
 
   const handleDelete = async () => {
     if (!isEditing) return
-    if (!window.confirm(`¿Borrar "${expense.name}"? No se puede deshacer.`)) return
+    const ok = await useUIStore.getState().confirm({
+      title: 'Borrar gasto fijo',
+      message: `"${expense.name}" se va a borrar. No se puede deshacer.`,
+      confirmText: 'Borrar',
+      danger: true,
+    })
+    if (!ok) return
     setDeleting(true)
     setError(null)
     try {

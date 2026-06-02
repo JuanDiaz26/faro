@@ -3,6 +3,7 @@ import { useCategoriesStore } from '../store/categories'
 import CategoryForm from '../components/CategoryForm'
 import Fab from '../components/Fab'
 import BackButton from '../components/BackButton'
+import { CardListSkeleton } from '../components/Skeleton'
 
 export default function Categories() {
   const { categories, loading, error, fetch, refresh } = useCategoriesStore()
@@ -35,7 +36,7 @@ export default function Categories() {
         <span className="text-xs text-slate-500">{categories.length} en total</span>
       </header>
 
-      {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
+      {loading && <CardListSkeleton />}
       {error && (
         <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}

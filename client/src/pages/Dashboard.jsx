@@ -8,13 +8,16 @@ import { getBudgetStatus } from '../api/budgets'
 import { getSavingsSummary } from '../api/savings'
 import {
   formatMoney,
-  formatMonth,
+  monthLabel,
   daysLeftInMonth,
   daysUntilNextDue,
 } from '../utils/format'
+import { usePeriodStore } from '../store/period'
 import TransactionForm from '../components/TransactionForm'
 import Fab from '../components/Fab'
 import SpendingChart from '../components/SpendingChart'
+import MonthNav from '../components/MonthNav'
+import { DashboardSkeleton } from '../components/Skeleton'
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true)
@@ -27,19 +30,21 @@ export default function Dashboard() {
   const [budgetStatus, setBudgetStatus] = useState({ budgets_count: 0, over_budget_count: 0 })
   const [savings, setSavings] = useState({ month_saved: 0, total_saved: 0 })
   const [modalOpen, setModalOpen] = useState(false)
+  const { month, year, isCurrent } = usePeriodStore()
   const now = new Date()
+  const viewingCurrent = isCurrent()
 
   const refresh = useCallback(() => {
     setLoading(true)
     setError(null)
     Promise.all([
-      getMonthlySummary(now.getMonth() + 1, now.getFullYear()),
+      getMonthlySummary(month, year),
       getTotalBalance(),
       getDebts(),
       getFixedExpenses(),
       getCards(),
-      getBudgetStatus(now.getMonth() + 1, now.getFullYear()),
-      getSavingsSummary(now.getMonth() + 1, now.getFullYear()),
+      getBudgetStatus(month, year),
+      getSavingsSummary(month, year),
     ])
       .then(([s, tb, d, fx, cs, bs, sv]) => {
         setSummary(s)
@@ -52,8 +57,7 @@ export default function Dashboard() {
       })
       .catch((e) => setError(e.message || 'Error al conectar con la API'))
       .finally(() => setLoading(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [month, year])
 
   useEffect(() => {
     refresh()
@@ -111,8 +115,12 @@ export default function Dashboard() {
     <div className="px-4 pb-4 pt-1.5 space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">{formatMonth(now)}</h1>
-          <p className="text-sm text-slate-500">Quedan {daysLeftInMonth(now)} días del mes</p>
+          <h1 className="text-2xl font-bold text-navy-900">{monthLabel(month, year)}</h1>
+          <p className="text-sm text-slate-500">
+            {viewingCurrent
+              ? `Quedan ${daysLeftInMonth(now)} días del mes`
+              : 'Mes pasado'}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <img
@@ -167,7 +175,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {loading && <div className="text-slate-500">Cargando…</div>}
+      {loading && <DashboardSkeleton />}
 
       {error && (
         <div className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">
@@ -179,9 +187,11 @@ export default function Dashboard() {
 
       {!loading && !error && (
         <>
+          <MonthNav />
+
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 px-1 mb-1.5">
-              Este mes
+              {viewingCurrent ? 'Este mes' : monthLabel(month, year)}
             </h2>
             <div className="grid grid-cols-3 gap-2">
               <StatCard label="Ingresos" amount={summary.ingresos} color="text-emerald-600" />

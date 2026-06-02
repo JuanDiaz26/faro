@@ -3,6 +3,7 @@ import { getDebts } from '../api/debts'
 import { formatMoney, daysUntilNextDue } from '../utils/format'
 import DebtForm from '../components/DebtForm'
 import Fab from '../components/Fab'
+import { CardListSkeleton } from '../components/Skeleton'
 
 export default function Debts() {
   const [debts, setDebts] = useState([])
@@ -37,7 +38,7 @@ export default function Debts() {
         )}
       </header>
 
-      {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
+      {loading && <CardListSkeleton />}
       {error && (
         <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}

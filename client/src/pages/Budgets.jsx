@@ -1,8 +1,11 @@
 ﻿import { useCallback, useEffect, useState } from 'react'
 import { getBudgetStatus } from '../api/budgets'
-import { formatMoney, formatMonth } from '../utils/format'
+import { formatMoney } from '../utils/format'
+import { usePeriodStore } from '../store/period'
 import BudgetForm from '../components/BudgetForm'
 import BackButton from '../components/BackButton'
+import MonthNav from '../components/MonthNav'
+import { CardListSkeleton } from '../components/Skeleton'
 
 // Devuelve "green" | "amber" | "red" | "none" según porcentaje gastado.
 function levelFor(pct, hasBudget) {
@@ -30,9 +33,7 @@ export default function Budgets() {
   const [error, setError] = useState(null)
   const [editing, setEditing] = useState(null)
 
-  const now = new Date()
-  const month = now.getMonth() + 1
-  const year = now.getFullYear()
+  const { month, year } = usePeriodStore()
 
   const refresh = useCallback(() => {
     setLoading(true)
@@ -58,13 +59,12 @@ export default function Budgets() {
     <div className="px-4 pb-4 pt-1.5 space-y-3">
       <header className="flex items-center gap-1">
         <BackButton />
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Presupuestos</h1>
-          <p className="text-sm text-slate-500">{formatMonth(now)}</p>
-        </div>
+        <h1 className="text-2xl font-bold text-slate-800">Presupuestos</h1>
       </header>
 
-      {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
+      <MonthNav />
+
+      {loading && <CardListSkeleton />}
       {error && (
         <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}

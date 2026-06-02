@@ -15,6 +15,9 @@ const MESES = [
 
 export const formatMonth = (d = new Date()) => `${MESES[d.getMonth()]} ${d.getFullYear()}`
 
+// Etiqueta a partir de mes (1-12) + año, sin construir un Date.
+export const monthLabel = (month, year) => `${MESES[month - 1]} ${year}`
+
 export const daysLeftInMonth = (d = new Date()) => {
   const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
   return lastDay - d.getDate()

@@ -1,8 +1,11 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { getTransactions } from '../api/transactions'
 import { useCategoriesStore } from '../store/categories'
+import { usePeriodStore } from '../store/period'
 import { formatMoney, isoFromDate } from '../utils/format'
 import TransactionForm from '../components/TransactionForm'
+import MonthNav from '../components/MonthNav'
+import { CardListSkeleton } from '../components/Skeleton'
 
 const MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -22,20 +25,6 @@ const PAYMENT_LABELS = {
   transfer: 'Transfer',
 }
 
-function recentMonths(n = 12) {
-  const out = []
-  const now = new Date()
-  for (let i = 0; i < n; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    out.push({
-      month: d.getMonth() + 1,
-      year: d.getFullYear(),
-      label: `${MESES[d.getMonth()]} ${d.getFullYear()}`,
-    })
-  }
-  return out
-}
-
 function relativeDate(isoDate) {
   const today = new Date()
   if (isoDate === isoFromDate(today)) return 'Hoy'
@@ -47,12 +36,7 @@ function relativeDate(isoDate) {
 }
 
 export default function History() {
-  const now = new Date()
-  const months = useMemo(() => recentMonths(12), [])
-  const [period, setPeriod] = useState({
-    month: now.getMonth() + 1,
-    year: now.getFullYear(),
-  })
+  const { month, year } = usePeriodStore()
   const [typeFilter, setTypeFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [items, setItems] = useState([])
@@ -68,7 +52,7 @@ export default function History() {
   const refresh = () => {
     setLoading(true)
     setError(null)
-    const params = { month: period.month, year: period.year }
+    const params = { month, year }
     if (typeFilter) params.type = typeFilter
     if (categoryFilter) params.category_id = Number(categoryFilter)
     getTransactions(params)
@@ -80,7 +64,7 @@ export default function History() {
   useEffect(() => {
     refresh()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period.month, period.year, typeFilter, categoryFilter])
+  }, [month, year, typeFilter, categoryFilter])
 
   const ingresos = items
     .filter((t) => t.type === 'income')
@@ -98,20 +82,7 @@ export default function History() {
 
       {/* Filtros */}
       <div className="space-y-2">
-        <select
-          value={`${period.year}-${period.month}`}
-          onChange={(e) => {
-            const [y, m] = e.target.value.split('-').map(Number)
-            setPeriod({ month: m, year: y })
-          }}
-          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-white"
-        >
-          {months.map((m) => (
-            <option key={`${m.year}-${m.month}`} value={`${m.year}-${m.month}`}>
-              {m.label}
-            </option>
-          ))}
-        </select>
+        <MonthNav />
 
         <div className="grid grid-cols-3 gap-2">
           {TYPE_OPTIONS.map((opt) => (
@@ -145,7 +116,7 @@ export default function History() {
       </div>
 
       {/* Lista */}
-      {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
+      {loading && <CardListSkeleton />}
       {error && (
         <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}

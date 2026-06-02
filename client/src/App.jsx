@@ -11,6 +11,8 @@ import Categories from './pages/Categories'
 import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 import PWAUpdateToast from './components/PWAUpdateToast'
+import ConfirmDialog from './components/ConfirmDialog'
+import Toaster from './components/Toaster'
 
 function App() {
   return (
@@ -30,6 +32,8 @@ function App() {
         </Route>
       </Routes>
       <PWAUpdateToast />
+      <ConfirmDialog />
+      <Toaster />
     </>
   )
 }

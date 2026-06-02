@@ -2,6 +2,7 @@
 import { createCharge, updateCharge, deleteCharge } from '../api/cards'
 import { todayLocalISO } from '../utils/format'
 import useBodyScrollLock from '../hooks/useBodyScrollLock'
+import { useUIStore } from '../store/ui'
 
 // `charge` para modo edición. `cardId` requerido siempre.
 export default function ChargeForm({ open, onClose, onSaved, cardId, charge = null }) {
@@ -99,7 +100,13 @@ export default function ChargeForm({ open, onClose, onSaved, cardId, charge = nu
 
   const handleDelete = async () => {
     if (!isEditing) return
-    if (!window.confirm(`¿Borrar "${charge.description}"? No se puede deshacer.`)) return
+    const ok = await useUIStore.getState().confirm({
+      title: 'Borrar cargo',
+      message: `"${charge.description}" se va a borrar. No se puede deshacer.`,
+      confirmText: 'Borrar',
+      danger: true,
+    })
+    if (!ok) return
     setDeleting(true)
     setError(null)
     try {

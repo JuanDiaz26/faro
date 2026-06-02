@@ -4,6 +4,7 @@ import { formatMoney, formatMonth } from '../utils/format'
 import SavingsGoalForm from '../components/SavingsGoalForm'
 import SavingsMovementForm from '../components/SavingsMovementForm'
 import Fab from '../components/Fab'
+import { CardListSkeleton } from '../components/Skeleton'
 
 const SOURCE_LABELS = {
   sueldo: '💼 Sueldo',
@@ -70,7 +71,7 @@ export default function Savings() {
         </button>
       </header>
 
-      {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
+      {loading && <CardListSkeleton />}
       {error && (
         <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}

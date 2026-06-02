@@ -1,6 +1,7 @@
 ﻿import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { exportBackup, importBackup } from '../api/backup'
+import { useUIStore } from '../store/ui'
 
 const SECTIONS = [
   {
@@ -93,13 +94,16 @@ export default function Settings() {
           .join('\n')
       : '(no se pudo leer)'
 
-    const ok = window.confirm(
-      `⚠️ Vas a REEMPLAZAR toda la base con el backup.\n\n` +
+    const ok = await useUIStore.getState().confirm({
+      title: 'Reemplazar toda la base',
+      message:
+        `Se va a reemplazar TODO con el backup.\n\n` +
         `Archivo: ${file.name}\n` +
         `Exportado: ${payload?.exported_at || 'desconocido'}\n\n` +
-        `Contenido:\n${counts}\n\n` +
-        `¿Continuar?`
-    )
+        `Contenido:\n${counts}`,
+      confirmText: 'Reemplazar',
+      danger: true,
+    })
     if (!ok) return
 
     setBusy(true)

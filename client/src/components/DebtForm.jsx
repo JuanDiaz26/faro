@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { createDebt, updateDebt, deleteDebt } from '../api/debts'
 import useBodyScrollLock from '../hooks/useBodyScrollLock'
+import { useUIStore } from '../store/ui'
 
 // `debt` opcional → modo edición. Sin él, modo creación.
 export default function DebtForm({ open, onClose, onSaved, debt = null }) {
@@ -92,7 +93,13 @@ export default function DebtForm({ open, onClose, onSaved, debt = null }) {
 
   const handleDelete = async () => {
     if (!isEditing) return
-    if (!window.confirm(`¿Borrar la deuda "${debt.name}"? No se puede deshacer.`)) return
+    const ok = await useUIStore.getState().confirm({
+      title: 'Borrar deuda',
+      message: `"${debt.name}" se va a borrar. No se puede deshacer.`,
+      confirmText: 'Borrar',
+      danger: true,
+    })
+    if (!ok) return
     setDeleting(true)
     setError(null)
     try {

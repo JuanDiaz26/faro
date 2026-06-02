@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { createCategory, updateCategory, deleteCategory } from '../api/categories'
 import useBodyScrollLock from '../hooks/useBodyScrollLock'
+import { useUIStore } from '../store/ui'
 
 const PALETTE = [
   '#10b981', '#3b82f6', '#f59e0b', '#ef4444',
@@ -80,7 +81,13 @@ export default function CategoryForm({ open, onClose, onSaved, category = null }
 
   const handleDelete = async () => {
     if (!isEditing) return
-    if (!window.confirm(`¿Borrar la categoría "${category.name}"? Solo se puede si no está en uso.`)) return
+    const ok = await useUIStore.getState().confirm({
+      title: 'Borrar categoría',
+      message: `"${category.name}" solo se puede borrar si no está en uso.`,
+      confirmText: 'Borrar',
+      danger: true,
+    })
+    if (!ok) return
     setDeleting(true)
     setError(null)
     try {

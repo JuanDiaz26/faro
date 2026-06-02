@@ -5,6 +5,7 @@ import FixedExpenseForm from '../components/FixedExpenseForm'
 import TransactionForm from '../components/TransactionForm'
 import Fab from '../components/Fab'
 import BackButton from '../components/BackButton'
+import { CardListSkeleton } from '../components/Skeleton'
 
 export default function FixedExpenses() {
   const [items, setItems] = useState([])
@@ -58,7 +59,7 @@ export default function FixedExpenses() {
         )}
       </header>
 
-      {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
+      {loading && <CardListSkeleton />}
       {error && (
         <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}

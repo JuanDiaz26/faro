@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { createBudget, updateBudget, deleteBudget } from '../api/budgets'
 import useBodyScrollLock from '../hooks/useBodyScrollLock'
+import { useUIStore } from '../store/ui'
 import { formatMoney } from '../utils/format'
 
 // `item` viene del endpoint /status: tiene category_id, monthly_limit, spent, budget_id.
@@ -61,7 +62,13 @@ export default function BudgetForm({ open, onClose, onSaved, item, month, year }
 
   const handleDelete = async () => {
     if (!isEditing) return
-    if (!window.confirm(`¿Quitar el presupuesto de "${item.category_name}"?`)) return
+    const ok = await useUIStore.getState().confirm({
+      title: 'Quitar presupuesto',
+      message: `Se va a quitar el límite de "${item.category_name}".`,
+      confirmText: 'Quitar',
+      danger: true,
+    })
+    if (!ok) return
     setDeleting(true)
     setError(null)
     try {

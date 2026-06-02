@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { createGoal, updateGoal, deleteGoal } from '../api/savings'
 import useBodyScrollLock from '../hooks/useBodyScrollLock'
+import { useUIStore } from '../store/ui'
 
 const PALETTE = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7', '#ec4899', '#14b8a6']
 
@@ -77,12 +78,13 @@ export default function SavingsGoalForm({ open, onClose, onSaved, goal = null })
 
   const handleDelete = async () => {
     if (!isEditing) return
-    if (
-      !window.confirm(
-        `¿Borrar la meta "${goal.name}"? Los aportes que tenga pasan a "Suelto" (no se pierden).`
-      )
-    )
-      return
+    const ok = await useUIStore.getState().confirm({
+      title: 'Borrar meta',
+      message: `Los aportes de "${goal.name}" pasan a "Suelto" (no se pierden).`,
+      confirmText: 'Borrar',
+      danger: true,
+    })
+    if (!ok) return
     setDeleting(true)
     setError(null)
     try {

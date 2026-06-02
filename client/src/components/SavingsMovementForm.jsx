@@ -7,6 +7,7 @@ import {
 } from '../api/savings'
 import { todayLocalISO } from '../utils/format'
 import useBodyScrollLock from '../hooks/useBodyScrollLock'
+import { useUIStore } from '../store/ui'
 
 const SOURCES = [
   { id: 'sueldo', label: 'Sueldo', icon: '💼' },
@@ -95,7 +96,13 @@ export default function SavingsMovementForm({
 
   const handleDelete = async () => {
     if (!isEditing) return
-    if (!window.confirm('¿Borrar este aporte? No se puede deshacer.')) return
+    const ok = await useUIStore.getState().confirm({
+      title: 'Borrar aporte',
+      message: 'No se puede deshacer.',
+      confirmText: 'Borrar',
+      danger: true,
+    })
+    if (!ok) return
     setDeleting(true)
     setError(null)
     try {

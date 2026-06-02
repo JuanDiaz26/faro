@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { createCard, updateCard, deleteCard } from '../api/cards'
 import useBodyScrollLock from '../hooks/useBodyScrollLock'
+import { useUIStore } from '../store/ui'
 
 const PALETTE = ['#FF6B00', '#3b82f6', '#10b981', '#a855f7', '#ef4444', '#f59e0b', '#64748b']
 
@@ -72,12 +73,13 @@ export default function CardForm({ open, onClose, onSaved, card = null }) {
 
   const handleDelete = async () => {
     if (!isEditing) return
-    if (
-      !window.confirm(
-        `¿Borrar "${card.name}"? Se borran TODOS sus cargos pendientes. No se puede deshacer.`
-      )
-    )
-      return
+    const ok = await useUIStore.getState().confirm({
+      title: 'Borrar tarjeta',
+      message: `Se borran TODOS los cargos pendientes de "${card.name}". No se puede deshacer.`,
+      confirmText: 'Borrar',
+      danger: true,
+    })
+    if (!ok) return
     setDeleting(true)
     setError(null)
     try {

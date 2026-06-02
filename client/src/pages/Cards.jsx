@@ -5,11 +5,13 @@ import {
   closeStatement,
 } from '../api/cards'
 import { useCategoriesStore } from '../store/categories'
+import { useUIStore } from '../store/ui'
 import { formatMoney, daysUntilNextDue } from '../utils/format'
 import BackButton from '../components/BackButton'
 import CardForm from '../components/CardForm'
 import ChargeForm from '../components/ChargeForm'
 import TransactionForm from '../components/TransactionForm'
+import { CardListSkeleton } from '../components/Skeleton'
 
 const MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -80,29 +82,35 @@ export default function Cards() {
   }
 
   const handleClose = async (card) => {
-    const ok = window.confirm(
-      `⚠ Cerrar resumen de ${card.name}\n\n` +
-        'SOLO confirmá si YA te llegó el resumen real de la tarjeta.\n' +
-        'Esta acción NO se puede deshacer fácilmente.\n\n' +
-        `Próximo resumen actual: ${formatMoney(card.next_statement_estimate)}\n\n` +
+    const ok = await useUIStore.getState().confirm({
+      title: `Cerrar resumen de ${card.name}`,
+      message:
+        'Confirmá SOLO si ya te llegó el resumen real.\n\n' +
+        `Próximo resumen: ${formatMoney(card.next_statement_estimate)}\n` +
         '• Cuotas pendientes: bajan 1 mes\n' +
         '• Cargos al último mes: se archivan\n' +
-        '• Recurrentes: siguen igual\n\n' +
-        'Después usás "Pagar" para registrar el pago del resumen como gasto.'
-    )
+        '• Recurrentes: siguen igual',
+      confirmText: 'Cerrar resumen',
+      danger: true,
+    })
     if (!ok) return
     try {
       const result = await closeStatement(card.id)
       refresh()
       if (result.archived_count > 0) {
-        window.alert(
-          `✓ Resumen cerrado.\nSe archivaron ${result.archived_count} cargo${
+        useUIStore.getState().toast(
+          `Resumen cerrado. Se archivaron ${result.archived_count} cargo${
             result.archived_count === 1 ? '' : 's'
-          } al llegar al último mes.`
+          }.`
         )
+      } else {
+        useUIStore.getState().toast('Resumen cerrado.')
       }
     } catch (err) {
-      window.alert(err.response?.data?.error || 'Error al cerrar resumen')
+      useUIStore.getState().toast(
+        err.response?.data?.error || 'Error al cerrar resumen',
+        'err'
+      )
     }
   }
 
@@ -125,7 +133,7 @@ export default function Cards() {
         </button>
       </header>
 
-      {loading && <div className="text-slate-500 text-sm">Cargando…</div>}
+      {loading && <CardListSkeleton />}
       {error && (
         <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div>
       )}
