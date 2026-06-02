@@ -4,6 +4,19 @@
 
 :root {
   color-scheme: light;
+  /* Alto de la status bar. En navegador normal es 0. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* En PWA instalada (standalone), iOS dibuja la hora/batería encima del
+   contenido. Garantizamos un mínimo por si env() devuelve 0 en algún
+   dispositivo. (display-mode: standalone soportado en iOS 16.4+) */
+@media (display-mode: standalone) {
+  :root {
+    --safe-top: max(env(safe-area-inset-top, 0px), 44px);
+    --safe-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+  }
 }
 
 body {
