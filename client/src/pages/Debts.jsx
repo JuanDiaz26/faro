@@ -27,7 +27,7 @@ export default function Debts() {
   const totalRemaining = debts.reduce((sum, d) => sum + d.remaining_amount, 0)
 
   return (
-    <div className="p-4 space-y-3">
+    <div className="px-4 pb-4 pt-1.5 space-y-3">
       <header className="flex items-baseline justify-between">
         <h1 className="text-2xl font-bold text-slate-800">Deudas</h1>
         {debts.length > 0 && (

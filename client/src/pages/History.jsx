@@ -91,7 +91,7 @@ export default function History() {
   const total = ingresos - gastos
 
   return (
-    <div className="p-4 space-y-3">
+    <div className="px-4 pb-4 pt-1.5 space-y-3">
       <header className="pt-1">
         <h1 className="text-2xl font-bold text-slate-800">Historial</h1>
       </header>

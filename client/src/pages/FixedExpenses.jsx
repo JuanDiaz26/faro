@@ -45,7 +45,7 @@ export default function FixedExpenses() {
   }
 
   return (
-    <div className="p-4 space-y-3">
+    <div className="px-4 pb-4 pt-1.5 space-y-3">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <BackButton />
