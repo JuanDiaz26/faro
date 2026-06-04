@@ -121,3 +121,44 @@ CREATE TABLE IF NOT EXISTS card_charges (
   FOREIGN KEY (card_id) REFERENCES credit_cards(id) ON DELETE CASCADE,
   FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );
+
+-- ===== Fase 2 — Vida: Tareas y Metas =====
+
+-- Tareas / recordatorios (agenda in-app).
+-- recurrence: 'once' (una vez, usa due_date) | 'daily' | 'weekly' (usa weekdays) | 'monthly' (usa day_of_month)
+CREATE TABLE IF NOT EXISTS tasks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  notes TEXT,
+  recurrence TEXT NOT NULL DEFAULT 'once',
+  weekdays TEXT,                    -- 'weekly': lista CSV de 0-6 (0=domingo), ej '1,3,5'
+  day_of_month INTEGER,             -- 'monthly': día del mes (1-31)
+  due_date DATE,                    -- 'once': fecha puntual
+  time_of_day TEXT,                 -- 'HH:MM' opcional (solo display/orden)
+  active BOOLEAN DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Marcas de completado por día (para tareas recurrentes y únicas).
+-- Una tarea está "hecha" en una fecha si existe la fila correspondiente.
+CREATE TABLE IF NOT EXISTS task_completions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  task_id INTEGER NOT NULL,
+  date DATE NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(task_id, date),
+  FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+);
+
+-- Metas / objetivos personales a futuro (distinto de savings_goals, que es plata).
+CREATE TABLE IF NOT EXISTS life_goals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  description TEXT,
+  icon TEXT DEFAULT '🎯',
+  color TEXT DEFAULT '#F59E0B',
+  target_date DATE,                 -- fecha objetivo opcional
+  progress INTEGER DEFAULT 0,       -- 0-100, manual
+  status TEXT NOT NULL DEFAULT 'active', -- 'active' | 'done'
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

@@ -12,6 +12,8 @@ const fixedExpensesRouter = require('./routes/fixed-expenses')
 const cardsRouter = require('./routes/cards')
 const cardChargesRouter = require('./routes/card-charges')
 const budgetsRouter = require('./routes/budgets')
+const tasksRouter = require('./routes/tasks')
+const lifeGoalsRouter = require('./routes/life-goals')
 const backupRouter = require('./routes/backup')
 const errorHandler = require('./middleware/errorHandler')
 
@@ -43,6 +45,8 @@ app.use('/api/fixed-expenses', fixedExpensesRouter)
 app.use('/api/cards', cardsRouter)
 app.use('/api/card-charges', cardChargesRouter)
 app.use('/api/budgets', budgetsRouter)
+app.use('/api/tasks', tasksRouter)
+app.use('/api/life-goals', lifeGoalsRouter)
 app.use('/api/backup', backupRouter)
 
 // 404 explícito para APIs desconocidas (antes del catch-all del frontend).

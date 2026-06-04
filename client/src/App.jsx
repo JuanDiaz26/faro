@@ -8,6 +8,7 @@ import Savings from './pages/Savings'
 import FixedExpenses from './pages/FixedExpenses'
 import Cards from './pages/Cards'
 import Categories from './pages/Categories'
+import Tasks from './pages/Tasks'
 import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 import PWAUpdateToast from './components/PWAUpdateToast'
@@ -27,6 +28,7 @@ function App() {
           <Route path="/fixed" element={<FixedExpenses />} />
           <Route path="/cards" element={<Cards />} />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/tasks" element={<Tasks />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Route>

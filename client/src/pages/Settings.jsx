@@ -5,6 +5,13 @@ import { useUIStore } from '../store/ui'
 
 const SECTIONS = [
   {
+    to: '/debts',
+    icon: '💳',
+    title: 'Deudas',
+    description: 'Préstamos, saldos pendientes y vencimientos',
+    available: true,
+  },
+  {
     to: '/cards',
     icon: '💳',
     title: 'Tarjetas',

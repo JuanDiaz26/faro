@@ -18,6 +18,9 @@ const TABLES = [
   'savings_movements',
   'card_charges',
   'budgets',
+  'life_goals',
+  'tasks',
+  'task_completions',
 ]
 
 // GET /api/backup/export → JSON con todas las tablas.

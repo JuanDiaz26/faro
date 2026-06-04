@@ -2,9 +2,9 @@ import { NavLink } from 'react-router-dom'
 
 const TABS = [
   { to: '/', label: 'Inicio', icon: '📊' },
+  { to: '/tasks', label: 'Tareas', icon: '✅' },
   { to: '/history', label: 'Historial', icon: '📜' },
   { to: '/savings', label: 'Ahorro', icon: '💰' },
-  { to: '/debts', label: 'Deudas', icon: '💳' },
   { to: '/settings', label: 'Más', icon: '⚙️' },
 ]
 

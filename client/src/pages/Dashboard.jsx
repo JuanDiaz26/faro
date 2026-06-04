@@ -6,11 +6,13 @@ import { getFixedExpenses } from '../api/fixedExpenses'
 import { getCards } from '../api/cards'
 import { getBudgetStatus } from '../api/budgets'
 import { getSavingsSummary } from '../api/savings'
+import { getAgenda } from '../api/tasks'
 import {
   formatMoney,
   monthLabel,
   daysLeftInMonth,
   daysUntilNextDue,
+  todayLocalISO,
 } from '../utils/format'
 import { usePeriodStore } from '../store/period'
 import TransactionForm from '../components/TransactionForm'
@@ -29,6 +31,7 @@ export default function Dashboard() {
   const [cards, setCards] = useState([])
   const [budgetStatus, setBudgetStatus] = useState({ budgets_count: 0, over_budget_count: 0 })
   const [savings, setSavings] = useState({ month_saved: 0, total_saved: 0 })
+  const [todayTasks, setTodayTasks] = useState({ pending: 0, total: 0 })
   const [modalOpen, setModalOpen] = useState(false)
   const { month, year, isCurrent } = usePeriodStore()
   const now = new Date()
@@ -62,6 +65,17 @@ export default function Dashboard() {
   useEffect(() => {
     refresh()
   }, [refresh])
+
+  // Tareas de hoy: independiente del mes seleccionado, con su propio catch
+  // para no romper el dashboard financiero si el endpoint fallara.
+  useEffect(() => {
+    getAgenda(todayLocalISO())
+      .then((a) => {
+        const all = [...a.today, ...a.overdue]
+        setTodayTasks({ pending: all.filter((t) => !t.done).length, total: all.length })
+      })
+      .catch(() => setTodayTasks({ pending: 0, total: 0 }))
+  }, [])
 
   // Próximos vencimientos: deudas activas (con due_day + remaining>0) + gastos fijos activos.
   const upcomingDebts = debts
@@ -187,6 +201,24 @@ export default function Dashboard() {
 
       {!loading && !error && (
         <>
+          {todayTasks.pending > 0 && (
+            <Link
+              to="/tasks"
+              className="block rounded-2xl bg-white border border-beam-100 p-3 shadow-sm active:scale-[0.99] transition-transform"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-700">
+                  ✅ Tenés{' '}
+                  <span className="font-semibold text-beam-600">
+                    {todayTasks.pending} tarea{todayTasks.pending === 1 ? '' : 's'}
+                  </span>{' '}
+                  para hoy
+                </span>
+                <span className="text-beam-500">›</span>
+              </div>
+            </Link>
+          )}
+
           <MonthNav />
 
           <div>
