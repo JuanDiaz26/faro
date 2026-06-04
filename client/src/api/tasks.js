@@ -5,6 +5,9 @@ export const getTasks = () => api.get('/tasks').then((r) => r.data)
 export const getAgenda = (date) =>
   api.get('/tasks/agenda', { params: date ? { date } : {} }).then((r) => r.data)
 
+export const getTasksRange = (from, to) =>
+  api.get('/tasks/range', { params: { from, to } }).then((r) => r.data)
+
 export const createTask = (data) => api.post('/tasks', data).then((r) => r.data)
 
 export const updateTask = (id, data) =>

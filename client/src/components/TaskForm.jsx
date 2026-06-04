@@ -21,12 +21,12 @@ const WEEKDAYS = [
   { v: 0, label: 'D' },
 ]
 
-export default function TaskForm({ open, onClose, onSaved, task = null }) {
+export default function TaskForm({ open, onClose, onSaved, task = null, defaultDate = null }) {
   const isEditing = Boolean(task)
   const [title, setTitle] = useState('')
   const [notes, setNotes] = useState('')
   const [recurrence, setRecurrence] = useState('once')
-  const [dueDate, setDueDate] = useState(todayLocalISO())
+  const [dueDate, setDueDate] = useState(defaultDate || todayLocalISO())
   const [weekdays, setWeekdays] = useState([]) // array de 0-6
   const [dayOfMonth, setDayOfMonth] = useState('1')
   const [time, setTime] = useState('')
@@ -51,7 +51,7 @@ export default function TaskForm({ open, onClose, onSaved, task = null }) {
       setTitle('')
       setNotes('')
       setRecurrence('once')
-      setDueDate(todayLocalISO())
+      setDueDate(defaultDate || todayLocalISO())
       setWeekdays([])
       setDayOfMonth('1')
       setTime('')

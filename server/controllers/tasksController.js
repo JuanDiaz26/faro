@@ -72,6 +72,36 @@ function agenda(req, res) {
   res.json({ date: dateISO, today, overdue })
 }
 
+// GET /api/tasks/range?from=YYYY-MM-DD&to=YYYY-MM-DD
+// Devuelve { days: { 'YYYY-MM-DD': [tareas con done] } } para todo el rango.
+// Alimenta las vistas Semana y Mes del frontend con una sola llamada.
+function range(req, res) {
+  const { from, to } = req.query
+  if (!from || !to) return res.status(400).json({ error: 'from y to requeridos' })
+
+  const tasks = db.prepare('SELECT * FROM tasks WHERE active = 1').all()
+  const comps = db
+    .prepare('SELECT task_id, date FROM task_completions WHERE date >= ? AND date <= ?')
+    .all(from, to)
+
+  const doneByDate = {}
+  for (const c of comps) {
+    if (!doneByDate[c.date]) doneByDate[c.date] = new Set()
+    doneByDate[c.date].add(c.task_id)
+  }
+
+  const days = {}
+  const end = parseISO(to)
+  for (let d = parseISO(from); d <= end; d.setDate(d.getDate() + 1)) {
+    const iso = isoLocal(d)
+    days[iso] = tasks
+      .filter((t) => taskAppliesOn(t, d))
+      .map((t) => ({ ...t, done: doneByDate[iso] ? doneByDate[iso].has(t.id) : false }))
+  }
+
+  res.json({ from, to, days })
+}
+
 // POST /api/tasks
 function create(req, res) {
   const {
@@ -144,4 +174,4 @@ function toggle(req, res) {
   res.json({ task_id: id, date, done: true })
 }
 
-module.exports = { getAll, agenda, create, update, remove, toggle }
+module.exports = { getAll, agenda, range, create, update, remove, toggle }

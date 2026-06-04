@@ -25,6 +25,14 @@ router.get(
   controller.agenda
 )
 
+router.get(
+  '/range',
+  query('from').matches(/^\d{4}-\d{2}-\d{2}$/),
+  query('to').matches(/^\d{4}-\d{2}-\d{2}$/),
+  validate,
+  controller.range
+)
+
 router.get('/', controller.getAll)
 router.post('/', ...bodyRules, validate, controller.create)
 router.put('/:id', param('id').isInt({ gt: 0 }), ...bodyRules, validate, controller.update)
