@@ -1,4 +1,4 @@
-// Lógica de tareas / recordatorios (agenda in-app).
+﻿// Lógica de tareas / recordatorios (agenda in-app).
 const db = require('../db/database')
 
 // ¿La tarea aplica en la fecha dada? (date = objeto Date local)
@@ -34,22 +34,20 @@ function parseISO(iso) {
 }
 
 // GET /api/tasks  → todas las tareas activas (para gestión)
-function getAll(req, res) {
-  const rows = db
-    .prepare('SELECT * FROM tasks WHERE active = 1 ORDER BY time_of_day IS NULL, time_of_day, id')
+async function getAll(req, res) {
+  const rows = await db.prepare('SELECT * FROM tasks WHERE active = 1 ORDER BY time_of_day IS NULL, time_of_day, id')
     .all()
   res.json(rows)
 }
 
 // GET /api/tasks/agenda?date=YYYY-MM-DD
 // Devuelve las tareas que aplican ese día + si están hechas + tareas 'once' vencidas no hechas.
-function agenda(req, res) {
+async function agenda(req, res) {
   const dateISO = req.query.date || isoLocal(new Date())
   const date = parseISO(dateISO)
 
-  const tasks = db.prepare('SELECT * FROM tasks WHERE active = 1').all()
-  const completions = db
-    .prepare('SELECT task_id FROM task_completions WHERE date = ?')
+  const tasks = await db.prepare('SELECT * FROM tasks WHERE active = 1').all()
+  const completions = await db.prepare('SELECT task_id FROM task_completions WHERE date = ?')
     .all(dateISO)
   const doneSet = new Set(completions.map((c) => c.task_id))
 
@@ -58,15 +56,21 @@ function agenda(req, res) {
     .filter((t) => taskAppliesOn(t, date))
     .map((t) => ({ ...t, done: doneSet.has(t.id), overdue: false }))
 
-  // Tareas 'once' vencidas y NO hechas (due_date < hoy, sin completion alguna)
+  // Tareas 'once' vencidas y NO hechas (due_date < hoy, sin completion alguna).
+  // Traemos los task_id que alguna vez se completaron y filtramos en memoria.
+  const everCompleted = new Set(
+    (await db.prepare('SELECT DISTINCT task_id FROM task_completions').all()).map(
+      (r) => r.task_id
+    )
+  )
   const overdue = tasks
-    .filter((t) => t.recurrence === 'once' && t.due_date && t.due_date < dateISO)
-    .filter((t) => {
-      const c = db
-        .prepare('SELECT 1 FROM task_completions WHERE task_id = ? LIMIT 1')
-        .get(t.id)
-      return !c
-    })
+    .filter(
+      (t) =>
+        t.recurrence === 'once' &&
+        t.due_date &&
+        t.due_date < dateISO &&
+        !everCompleted.has(t.id)
+    )
     .map((t) => ({ ...t, done: false, overdue: true }))
 
   res.json({ date: dateISO, today, overdue })
@@ -75,13 +79,12 @@ function agenda(req, res) {
 // GET /api/tasks/range?from=YYYY-MM-DD&to=YYYY-MM-DD
 // Devuelve { days: { 'YYYY-MM-DD': [tareas con done] } } para todo el rango.
 // Alimenta las vistas Semana y Mes del frontend con una sola llamada.
-function range(req, res) {
+async function range(req, res) {
   const { from, to } = req.query
   if (!from || !to) return res.status(400).json({ error: 'from y to requeridos' })
 
-  const tasks = db.prepare('SELECT * FROM tasks WHERE active = 1').all()
-  const comps = db
-    .prepare('SELECT task_id, date FROM task_completions WHERE date >= ? AND date <= ?')
+  const tasks = await db.prepare('SELECT * FROM tasks WHERE active = 1').all()
+  const comps = await db.prepare('SELECT task_id, date FROM task_completions WHERE date >= ? AND date <= ?')
     .all(from, to)
 
   const doneByDate = {}
@@ -103,7 +106,7 @@ function range(req, res) {
 }
 
 // POST /api/tasks
-function create(req, res) {
+async function create(req, res) {
   const {
     title,
     notes = null,
@@ -114,19 +117,18 @@ function create(req, res) {
     time_of_day = null,
   } = req.body
 
-  const { lastInsertRowid } = db
-    .prepare(
+  const { lastInsertRowid } = await db.prepare(
       `INSERT INTO tasks (title, notes, recurrence, weekdays, day_of_month, due_date, time_of_day)
        VALUES (@title, @notes, @recurrence, @weekdays, @day_of_month, @due_date, @time_of_day)`
     )
     .run({ title, notes, recurrence, weekdays, day_of_month, due_date, time_of_day })
 
-  const created = db.prepare('SELECT * FROM tasks WHERE id = ?').get(lastInsertRowid)
+  const created = await db.prepare('SELECT * FROM tasks WHERE id = ?').get(lastInsertRowid)
   res.status(201).json(created)
 }
 
 // PUT /api/tasks/:id
-function update(req, res) {
+async function update(req, res) {
   const id = Number(req.params.id)
   const {
     title,
@@ -138,8 +140,7 @@ function update(req, res) {
     time_of_day = null,
   } = req.body
 
-  const { changes } = db
-    .prepare(
+  const { changes } = await db.prepare(
       `UPDATE tasks SET title=@title, notes=@notes, recurrence=@recurrence,
         weekdays=@weekdays, day_of_month=@day_of_month, due_date=@due_date,
         time_of_day=@time_of_day WHERE id=@id`
@@ -147,30 +148,29 @@ function update(req, res) {
     .run({ id, title, notes, recurrence, weekdays, day_of_month, due_date, time_of_day })
 
   if (changes === 0) return res.status(404).json({ error: 'Tarea no encontrada' })
-  res.json(db.prepare('SELECT * FROM tasks WHERE id = ?').get(id))
+  res.json(await db.prepare('SELECT * FROM tasks WHERE id = ?').get(id))
 }
 
 // DELETE /api/tasks/:id  (borrado real; las completions caen por CASCADE)
-function remove(req, res) {
-  const { changes } = db.prepare('DELETE FROM tasks WHERE id = ?').run(req.params.id)
+async function remove(req, res) {
+  const { changes } = await db.prepare('DELETE FROM tasks WHERE id = ?').run(req.params.id)
   if (changes === 0) return res.status(404).json({ error: 'Tarea no encontrada' })
   res.status(204).send()
 }
 
 // POST /api/tasks/:id/toggle  { date }  → marca/desmarca completado ese día
-function toggle(req, res) {
+async function toggle(req, res) {
   const id = Number(req.params.id)
   const date = req.body.date || isoLocal(new Date())
 
-  const exists = db
-    .prepare('SELECT id FROM task_completions WHERE task_id = ? AND date = ?')
+  const exists = await db.prepare('SELECT id FROM task_completions WHERE task_id = ? AND date = ?')
     .get(id, date)
 
   if (exists) {
-    db.prepare('DELETE FROM task_completions WHERE id = ?').run(exists.id)
+    await db.prepare('DELETE FROM task_completions WHERE id = ?').run(exists.id)
     return res.json({ task_id: id, date, done: false })
   }
-  db.prepare('INSERT INTO task_completions (task_id, date) VALUES (?, ?)').run(id, date)
+  await db.prepare('INSERT INTO task_completions (task_id, date) VALUES (?, ?)').run(id, date)
   res.json({ task_id: id, date, done: true })
 }
 

@@ -16,6 +16,7 @@ const tasksRouter = require('./routes/tasks')
 const lifeGoalsRouter = require('./routes/life-goals')
 const backupRouter = require('./routes/backup')
 const errorHandler = require('./middleware/errorHandler')
+const { init } = require('./db/database')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -74,6 +75,14 @@ if (fs.existsSync(CLIENT_DIST)) {
 // Manejador central de errores (debe ir último)
 app.use(errorHandler)
 
-app.listen(PORT, () => {
-  console.log(`🚀 Faro corriendo en http://localhost:${PORT}`)
-})
+// Aplicamos schema + seed (async) y recién ahí levantamos el server.
+init()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Faro corriendo en http://localhost:${PORT}`)
+    })
+  })
+  .catch((e) => {
+    console.error('❌ No se pudo inicializar la base de datos:', e)
+    process.exit(1)
+  })

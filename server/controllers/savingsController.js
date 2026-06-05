@@ -1,14 +1,13 @@
-// Lógica de negocio de Ahorro: metas (savings_goals) + aportes (savings_movements).
+﻿// Lógica de negocio de Ahorro: metas (savings_goals) + aportes (savings_movements).
 const db = require('../db/database')
 
 // ─── METAS ───────────────────────────────────────────────
 
 // GET /api/savings/goals  (con monto actual calculado)
-function listGoals(req, res) {
+async function listGoals(req, res) {
   const includeArchived = req.query.active === 'false'
   const where = includeArchived ? '' : 'WHERE g.active = 1'
-  const rows = db
-    .prepare(
+  const rows = await db.prepare(
       `SELECT g.*,
               COALESCE(SUM(m.amount), 0) AS current_amount,
               COUNT(m.id) AS movements_count
@@ -22,9 +21,8 @@ function listGoals(req, res) {
   res.json(rows)
 }
 
-function getGoal(req, res) {
-  const row = db
-    .prepare(
+async function getGoal(req, res) {
+  const row = await db.prepare(
       `SELECT g.*, COALESCE(SUM(m.amount), 0) AS current_amount
        FROM savings_goals g
        LEFT JOIN savings_movements m ON m.goal_id = g.id
@@ -36,7 +34,7 @@ function getGoal(req, res) {
   res.json(row)
 }
 
-function createGoal(req, res) {
+async function createGoal(req, res) {
   const {
     name,
     target_amount,
@@ -44,17 +42,16 @@ function createGoal(req, res) {
     color = '#10b981',
     description = null,
   } = req.body
-  const { lastInsertRowid } = db
-    .prepare(
+  const { lastInsertRowid } = await db.prepare(
       `INSERT INTO savings_goals (name, target_amount, icon, color, description, active)
        VALUES (@name, @target_amount, @icon, @color, @description, 1)`
     )
     .run({ name, target_amount, icon, color, description })
-  const created = db.prepare('SELECT * FROM savings_goals WHERE id = ?').get(lastInsertRowid)
+  const created = await db.prepare('SELECT * FROM savings_goals WHERE id = ?').get(lastInsertRowid)
   res.status(201).json({ ...created, current_amount: 0 })
 }
 
-function updateGoal(req, res) {
+async function updateGoal(req, res) {
   const id = Number(req.params.id)
   const {
     name,
@@ -64,8 +61,7 @@ function updateGoal(req, res) {
     description = null,
     active = true,
   } = req.body
-  const { changes } = db
-    .prepare(
+  const { changes } = await db.prepare(
       `UPDATE savings_goals SET
          name = @name,
          target_amount = @target_amount,
@@ -85,8 +81,7 @@ function updateGoal(req, res) {
       active: active ? 1 : 0,
     })
   if (!changes) return res.status(404).json({ error: 'Meta no encontrada' })
-  const updated = db
-    .prepare(
+  const updated = await db.prepare(
       `SELECT g.*, COALESCE(SUM(m.amount), 0) AS current_amount
        FROM savings_goals g
        LEFT JOIN savings_movements m ON m.goal_id = g.id
@@ -97,9 +92,9 @@ function updateGoal(req, res) {
   res.json(updated)
 }
 
-function removeGoal(req, res) {
+async function removeGoal(req, res) {
   // Por FK con ON DELETE SET NULL, los movimientos no se borran: pasan a "suelto".
-  const { changes } = db.prepare('DELETE FROM savings_goals WHERE id = ?').run(req.params.id)
+  const { changes } = await db.prepare('DELETE FROM savings_goals WHERE id = ?').run(req.params.id)
   if (!changes) return res.status(404).json({ error: 'Meta no encontrada' })
   res.status(204).send()
 }
@@ -115,7 +110,7 @@ const SELECT_MOVEMENT_WITH_GOAL = `
   LEFT JOIN savings_goals g ON g.id = m.goal_id
 `
 
-function listMovements(req, res) {
+async function listMovements(req, res) {
   const { goal_id, month, year, only_loose } = req.query
   const conditions = []
   const params = {}
@@ -137,28 +132,25 @@ function listMovements(req, res) {
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
   const sql = `${SELECT_MOVEMENT_WITH_GOAL} ${where} ORDER BY m.date DESC, m.id DESC`
   const stmt = db.prepare(sql)
-  res.json(conditions.length ? stmt.all(params) : stmt.all())
+  res.json(conditions.length ? await stmt.all(params) : await stmt.all())
 }
 
-function createMovement(req, res) {
+async function createMovement(req, res) {
   const { goal_id = null, amount, date, source = null, description = null } = req.body
-  const { lastInsertRowid } = db
-    .prepare(
+  const { lastInsertRowid } = await db.prepare(
       `INSERT INTO savings_movements (goal_id, amount, date, source, description)
        VALUES (@goal_id, @amount, @date, @source, @description)`
     )
     .run({ goal_id, amount, date, source, description })
-  const created = db
-    .prepare(`${SELECT_MOVEMENT_WITH_GOAL} WHERE m.id = ?`)
+  const created = await db.prepare(`${SELECT_MOVEMENT_WITH_GOAL} WHERE m.id = ?`)
     .get(lastInsertRowid)
   res.status(201).json(created)
 }
 
-function updateMovement(req, res) {
+async function updateMovement(req, res) {
   const id = Number(req.params.id)
   const { goal_id = null, amount, date, source = null, description = null } = req.body
-  const { changes } = db
-    .prepare(
+  const { changes } = await db.prepare(
       `UPDATE savings_movements
          SET goal_id = @goal_id,
              amount = @amount,
@@ -169,13 +161,12 @@ function updateMovement(req, res) {
     )
     .run({ id, goal_id, amount, date, source, description })
   if (!changes) return res.status(404).json({ error: 'Movimiento no encontrado' })
-  const updated = db.prepare(`${SELECT_MOVEMENT_WITH_GOAL} WHERE m.id = ?`).get(id)
+  const updated = await db.prepare(`${SELECT_MOVEMENT_WITH_GOAL} WHERE m.id = ?`).get(id)
   res.json(updated)
 }
 
-function removeMovement(req, res) {
-  const { changes } = db
-    .prepare('DELETE FROM savings_movements WHERE id = ?')
+async function removeMovement(req, res) {
+  const { changes } = await db.prepare('DELETE FROM savings_movements WHERE id = ?')
     .run(req.params.id)
   if (!changes) return res.status(404).json({ error: 'Movimiento no encontrado' })
   res.status(204).send()
@@ -184,19 +175,17 @@ function removeMovement(req, res) {
 // ─── SUMMARY ─────────────────────────────────────────────
 
 // GET /api/savings/summary?month=&year=  (default = mes/año actual)
-function summary(req, res) {
+async function summary(req, res) {
   const now = new Date()
   const month = req.query.month ? Number(req.query.month) : now.getMonth() + 1
   const year = req.query.year ? Number(req.query.year) : now.getFullYear()
 
-  const totalRow = db
-    .prepare(
+  const totalRow = await db.prepare(
       'SELECT COALESCE(SUM(amount), 0) AS total, COUNT(*) AS count FROM savings_movements'
     )
     .get()
 
-  const monthRow = db
-    .prepare(
+  const monthRow = await db.prepare(
       `SELECT COALESCE(SUM(amount), 0) AS total, COUNT(*) AS count
        FROM savings_movements
        WHERE CAST(strftime('%m', date) AS INTEGER) = @month
@@ -204,8 +193,7 @@ function summary(req, res) {
     )
     .get({ month, year })
 
-  const looseRow = db
-    .prepare(
+  const looseRow = await db.prepare(
       'SELECT COALESCE(SUM(amount), 0) AS total FROM savings_movements WHERE goal_id IS NULL'
     )
     .get()

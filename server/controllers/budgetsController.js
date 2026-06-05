@@ -1,14 +1,13 @@
-// Lógica de presupuestos: límites mensuales por categoría + status (gastado vs límite).
+﻿// Lógica de presupuestos: límites mensuales por categoría + status (gastado vs límite).
 const db = require('../db/database')
 
 // GET /api/budgets?month=&year=  → lista cruda de presupuestos del mes.
-function getAll(req, res) {
+async function getAll(req, res) {
   const now = new Date()
   const month = req.query.month ? Number(req.query.month) : now.getMonth() + 1
   const year = req.query.year ? Number(req.query.year) : now.getFullYear()
 
-  const rows = db
-    .prepare(
+  const rows = await db.prepare(
       `SELECT b.*,
               c.name  AS category_name,
               c.icon  AS category_icon,
@@ -24,13 +23,12 @@ function getAll(req, res) {
 
 // GET /api/budgets/status?month=&year=
 // Devuelve TODAS las categorías de gasto con su límite (si existe) y lo gastado.
-function status(req, res) {
+async function status(req, res) {
   const now = new Date()
   const month = req.query.month ? Number(req.query.month) : now.getMonth() + 1
   const year = req.query.year ? Number(req.query.year) : now.getFullYear()
 
-  const items = db
-    .prepare(
+  const items = await db.prepare(
       `SELECT
          c.id    AS category_id,
          c.name  AS category_name,
@@ -74,31 +72,28 @@ function status(req, res) {
   })
 }
 
-function create(req, res) {
+async function create(req, res) {
   const { category_id, monthly_limit, month, year } = req.body
-  const { lastInsertRowid } = db
-    .prepare(
+  const { lastInsertRowid } = await db.prepare(
       `INSERT INTO budgets (category_id, monthly_limit, month, year)
        VALUES (?, ?, ?, ?)`
     )
     .run(category_id, monthly_limit, month, year)
-  const created = db.prepare('SELECT * FROM budgets WHERE id = ?').get(lastInsertRowid)
+  const created = await db.prepare('SELECT * FROM budgets WHERE id = ?').get(lastInsertRowid)
   res.status(201).json(created)
 }
 
-function update(req, res) {
+async function update(req, res) {
   const id = Number(req.params.id)
   const { monthly_limit } = req.body
-  const { changes } = db
-    .prepare('UPDATE budgets SET monthly_limit = ? WHERE id = ?')
+  const { changes } = await db.prepare('UPDATE budgets SET monthly_limit = ? WHERE id = ?')
     .run(monthly_limit, id)
   if (!changes) return res.status(404).json({ error: 'Presupuesto no encontrado' })
-  res.json(db.prepare('SELECT * FROM budgets WHERE id = ?').get(id))
+  res.json(await db.prepare('SELECT * FROM budgets WHERE id = ?').get(id))
 }
 
-function remove(req, res) {
-  const { changes } = db
-    .prepare('DELETE FROM budgets WHERE id = ?')
+async function remove(req, res) {
+  const { changes } = await db.prepare('DELETE FROM budgets WHERE id = ?')
     .run(req.params.id)
   if (!changes) return res.status(404).json({ error: 'Presupuesto no encontrado' })
   res.status(204).send()

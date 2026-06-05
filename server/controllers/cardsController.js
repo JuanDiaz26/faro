@@ -1,14 +1,13 @@
-// Lógica de tarjetas de crédito + cargos pendientes + cierre de resumen.
+﻿// Lógica de tarjetas de crédito + cargos pendientes + cierre de resumen.
 const db = require('../db/database')
 
 // ─── TARJETAS ────────────────────────────────────────────
 
 // GET /api/cards  → lista con `next_statement_estimate` calculado.
-function listCards(req, res) {
+async function listCards(req, res) {
   const includeArchived = req.query.active === 'false'
   const where = includeArchived ? '' : 'WHERE c.active = 1'
-  const rows = db
-    .prepare(
+  const rows = await db.prepare(
       `SELECT c.*,
               COALESCE(SUM(CASE WHEN ch.active = 1 THEN ch.amount ELSE 0 END), 0) AS next_statement_estimate,
               SUM(CASE WHEN ch.active = 1 THEN 1 ELSE 0 END) AS active_charges_count
@@ -22,9 +21,8 @@ function listCards(req, res) {
   res.json(rows)
 }
 
-function getCard(req, res) {
-  const row = db
-    .prepare(
+async function getCard(req, res) {
+  const row = await db.prepare(
       `SELECT c.*,
               COALESCE(SUM(CASE WHEN ch.active = 1 THEN ch.amount ELSE 0 END), 0) AS next_statement_estimate
        FROM credit_cards c
@@ -37,24 +35,23 @@ function getCard(req, res) {
   res.json(row)
 }
 
-function createCard(req, res) {
+async function createCard(req, res) {
   const {
     name,
     color = '#FF6B00',
     closing_day = null,
     due_day = null,
   } = req.body
-  const { lastInsertRowid } = db
-    .prepare(
+  const { lastInsertRowid } = await db.prepare(
       `INSERT INTO credit_cards (name, color, closing_day, due_day, active)
        VALUES (@name, @color, @closing_day, @due_day, 1)`
     )
     .run({ name, color, closing_day, due_day })
-  const created = db.prepare('SELECT * FROM credit_cards WHERE id = ?').get(lastInsertRowid)
+  const created = await db.prepare('SELECT * FROM credit_cards WHERE id = ?').get(lastInsertRowid)
   res.status(201).json({ ...created, next_statement_estimate: 0, active_charges_count: 0 })
 }
 
-function updateCard(req, res) {
+async function updateCard(req, res) {
   const id = Number(req.params.id)
   const {
     name,
@@ -63,8 +60,7 @@ function updateCard(req, res) {
     due_day = null,
     active = true,
   } = req.body
-  const { changes } = db
-    .prepare(
+  const { changes } = await db.prepare(
       `UPDATE credit_cards SET
          name = @name,
          color = @color,
@@ -82,50 +78,46 @@ function updateCard(req, res) {
       active: active ? 1 : 0,
     })
   if (!changes) return res.status(404).json({ error: 'Tarjeta no encontrada' })
-  res.json(db.prepare('SELECT * FROM credit_cards WHERE id = ?').get(id))
+  res.json(await db.prepare('SELECT * FROM credit_cards WHERE id = ?').get(id))
 }
 
-function removeCard(req, res) {
+async function removeCard(req, res) {
   // CASCADE en FK borra los charges asociados automáticamente.
-  const { changes } = db.prepare('DELETE FROM credit_cards WHERE id = ?').run(req.params.id)
+  const { changes } = await db.prepare('DELETE FROM credit_cards WHERE id = ?').run(req.params.id)
   if (!changes) return res.status(404).json({ error: 'Tarjeta no encontrada' })
   res.status(204).send()
 }
 
 // POST /api/cards/:id/close-statement
 // Decrementa remaining_months de los cargos activos con cuotas; archiva los que llegan a 0.
-function closeStatement(req, res) {
+async function closeStatement(req, res) {
   const id = Number(req.params.id)
-  const card = db.prepare('SELECT * FROM credit_cards WHERE id = ?').get(id)
+  const card = await db.prepare('SELECT * FROM credit_cards WHERE id = ?').get(id)
   if (!card) return res.status(404).json({ error: 'Tarjeta no encontrada' })
 
-  const tx = db.transaction(() => {
-    // Decrementar cuotas (no recurrentes)
-    db.prepare(
-      `UPDATE card_charges
-         SET remaining_months = remaining_months - 1
-         WHERE card_id = @id
-           AND active = 1
-           AND remaining_months IS NOT NULL
-           AND remaining_months > 0`
-    ).run({ id })
-    // Archivar los que llegaron a 0
-    const archived = db
-      .prepare(
-        `UPDATE card_charges
-           SET active = 0
-           WHERE card_id = @id
-             AND remaining_months IS NOT NULL
-             AND remaining_months <= 0`
-      )
-      .run({ id })
-    return archived.changes
-  })
+  // Atómico: decrementar cuotas y archivar las que llegan a 0.
+  const [, archived] = await db.batch([
+    {
+      sql: `UPDATE card_charges
+              SET remaining_months = remaining_months - 1
+              WHERE card_id = @id
+                AND active = 1
+                AND remaining_months IS NOT NULL
+                AND remaining_months > 0`,
+      args: { id },
+    },
+    {
+      sql: `UPDATE card_charges
+              SET active = 0
+              WHERE card_id = @id
+                AND remaining_months IS NOT NULL
+                AND remaining_months <= 0`,
+      args: { id },
+    },
+  ])
+  const archivedCount = Number(archived.rowsAffected || 0)
 
-  const archivedCount = tx()
-
-  const updatedCard = db
-    .prepare(
+  const updatedCard = await db.prepare(
       `SELECT c.*,
               COALESCE(SUM(CASE WHEN ch.active = 1 THEN ch.amount ELSE 0 END), 0) AS next_statement_estimate
        FROM credit_cards c

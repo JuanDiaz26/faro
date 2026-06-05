@@ -1,5 +1,6 @@
-const express = require('express')
-const controller = require('../controllers/backupController')
+﻿const express = require('express')
+const asyncify = require('../utils/asyncify')
+const controller = asyncify(require('../controllers/backupController'))
 
 const router = express.Router()
 

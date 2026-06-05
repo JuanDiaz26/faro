@@ -1,7 +1,8 @@
-const express = require('express')
+﻿const express = require('express')
 const { body, param } = require('express-validator')
 const validate = require('../middleware/validate')
-const controller = require('../controllers/lifeGoalsController')
+const asyncify = require('../utils/asyncify')
+const controller = asyncify(require('../controllers/lifeGoalsController'))
 
 const router = express.Router()
 

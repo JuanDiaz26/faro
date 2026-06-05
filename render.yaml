@@ -1,0 +1,19 @@
+# Blueprint de Render para Faro (monolito: Express sirve API + SPA).
+# DB en Turso (libSQL) vía variables de entorno.
+services:
+  - type: web
+    name: faro
+    runtime: node
+    plan: free
+    # Instala deps de server y client, y buildea el frontend.
+    buildCommand: npm --prefix server ci && npm --prefix client ci && npm --prefix client run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.3.0
+      # Turso: cargar en el dashboard de Render (no se versionan).
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_AUTH_TOKEN
+        sync: false

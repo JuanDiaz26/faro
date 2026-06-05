@@ -1,4 +1,4 @@
-// Lógica de negocio de transacciones.
+﻿// Lógica de negocio de transacciones.
 const db = require('../db/database')
 
 // SELECT base con datos de la categoría embebidos (para el frontend).
@@ -12,7 +12,7 @@ const SELECT_WITH_CATEGORY = `
 `
 
 // GET /api/transactions  (filtros opcionales: month, year, category_id, type, payment_method)
-function getAll(req, res) {
+async function getAll(req, res) {
   const { month, year, category_id, type, payment_method } = req.query
   const conditions = []
   const params = {}
@@ -42,19 +42,17 @@ function getAll(req, res) {
   const sql = `${SELECT_WITH_CATEGORY} ${where} ORDER BY t.date DESC, t.id DESC`
   const stmt = db.prepare(sql)
 
-  // better-sqlite3 no acepta un objeto de params si la query no tiene placeholders.
-  const rows = conditions.length ? stmt.all(params) : stmt.all()
+  const rows = conditions.length ? await stmt.all(params) : await stmt.all()
   res.json(rows)
 }
 
 // GET /api/transactions/summary?month=&year=  (default = mes/año actual)
-function summary(req, res) {
+async function summary(req, res) {
   const now = new Date()
   const month = req.query.month ? Number(req.query.month) : now.getMonth() + 1
   const year = req.query.year ? Number(req.query.year) : now.getFullYear()
 
-  const rows = db
-    .prepare(
+  const rows = await db.prepare(
       `SELECT type, SUM(amount) AS total, COUNT(*) AS count
        FROM transactions
        WHERE CAST(strftime('%m', date) AS INTEGER) = @month
@@ -69,8 +67,7 @@ function summary(req, res) {
   const count = rows.reduce((sum, r) => sum + r.count, 0)
 
   // Breakdown de gastos por categoría (para el gráfico del Dashboard).
-  const byCategory = db
-    .prepare(
+  const byCategory = await db.prepare(
       `SELECT c.id   AS category_id,
               c.name AS name,
               c.icon AS icon,
@@ -101,9 +98,8 @@ function summary(req, res) {
 // GET /api/transactions/balance  — totales históricos (sin filtro de mes)
 // Útil para mostrar el saldo real cuando un sueldo de fin de mes
 // "cubre" el mes calendario siguiente.
-function balance(req, res) {
-  const rows = db
-    .prepare(
+async function balance(req, res) {
+  const rows = await db.prepare(
       `SELECT type, SUM(amount) AS total
        FROM transactions
        GROUP BY type`
@@ -121,14 +117,14 @@ function balance(req, res) {
 }
 
 // GET /api/transactions/:id
-function getOne(req, res) {
-  const row = db.prepare(`${SELECT_WITH_CATEGORY} WHERE t.id = ?`).get(req.params.id)
+async function getOne(req, res) {
+  const row = await db.prepare(`${SELECT_WITH_CATEGORY} WHERE t.id = ?`).get(req.params.id)
   if (!row) return res.status(404).json({ error: 'Transacción no encontrada' })
   res.json(row)
 }
 
 // POST /api/transactions
-function create(req, res) {
+async function create(req, res) {
   const {
     category_id,
     amount,
@@ -138,19 +134,18 @@ function create(req, res) {
     payment_method = null,
   } = req.body
 
-  const { lastInsertRowid } = db
-    .prepare(
+  const { lastInsertRowid } = await db.prepare(
       `INSERT INTO transactions (category_id, amount, description, date, type, payment_method)
        VALUES (@category_id, @amount, @description, @date, @type, @payment_method)`
     )
     .run({ category_id, amount, description, date, type, payment_method })
 
-  const created = db.prepare(`${SELECT_WITH_CATEGORY} WHERE t.id = ?`).get(lastInsertRowid)
+  const created = await db.prepare(`${SELECT_WITH_CATEGORY} WHERE t.id = ?`).get(lastInsertRowid)
   res.status(201).json(created)
 }
 
 // PUT /api/transactions/:id
-function update(req, res) {
+async function update(req, res) {
   const id = Number(req.params.id)
   const {
     category_id,
@@ -161,8 +156,7 @@ function update(req, res) {
     payment_method = null,
   } = req.body
 
-  const { changes } = db
-    .prepare(
+  const { changes } = await db.prepare(
       `UPDATE transactions
        SET category_id    = @category_id,
            amount         = @amount,
@@ -178,13 +172,13 @@ function update(req, res) {
     return res.status(404).json({ error: 'Transacción no encontrada' })
   }
 
-  const updated = db.prepare(`${SELECT_WITH_CATEGORY} WHERE t.id = ?`).get(id)
+  const updated = await db.prepare(`${SELECT_WITH_CATEGORY} WHERE t.id = ?`).get(id)
   res.json(updated)
 }
 
 // DELETE /api/transactions/:id
-function remove(req, res) {
-  const { changes } = db.prepare('DELETE FROM transactions WHERE id = ?').run(req.params.id)
+async function remove(req, res) {
+  const { changes } = await db.prepare('DELETE FROM transactions WHERE id = ?').run(req.params.id)
   if (changes === 0) {
     return res.status(404).json({ error: 'Transacción no encontrada' })
   }

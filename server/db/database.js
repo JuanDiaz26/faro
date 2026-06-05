@@ -1,42 +1,100 @@
-// Conexión compartida a SQLite (better-sqlite3, síncrono).
-// Una sola instancia para toda la app. Aplica el schema de forma idempotente
-// y siembra las categorías iniciales si la tabla está vacía (primera vez en deploy).
+// Capa de datos sobre libSQL (@libsql/client). Compatible con SQLite,
+// funciona local (archivo) y en la nube (Turso) según variables de entorno.
 //
-// DB_PATH: si está definida usa esa ruta (ej: /data/finanzas.db en Railway).
-// Si no, usa server/db/finanzas.db (modo local).
+// DATABASE_URL: 'libsql://...' de Turso en producción.
+//   Si no está, usa un archivo local server/db/finanzas.db (dev).
+// DATABASE_AUTH_TOKEN: token de Turso (solo en producción).
+//
+// Se expone un shim estilo better-sqlite3 (prepare().get/all/run) PERO ASÍNCRONO,
+// para que los controllers cambien lo mínimo: agregar async/await.
 
 const fs = require('node:fs')
 const path = require('node:path')
-const Database = require('better-sqlite3')
+const { createClient } = require('@libsql/client')
 const { categories: seedCategories } = require('./seed')
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'finanzas.db')
-const SCHEMA_PATH = path.join(__dirname, 'schema.sql')
+const LOCAL_PATH = process.env.DB_PATH || path.join(__dirname, 'finanzas.db')
+const url = process.env.DATABASE_URL || `file:${LOCAL_PATH}`
+const authToken = process.env.DATABASE_AUTH_TOKEN || undefined
+const isRemote = !url.startsWith('file:')
 
-// Asegurar que el directorio padre exista (importante para /data en Railway).
-const dir = path.dirname(DB_PATH)
-if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-
-const db = new Database(DB_PATH)
-db.pragma('journal_mode = WAL')
-db.pragma('foreign_keys = ON')
-
-// 1) Aplicar el schema (CREATE TABLE IF NOT EXISTS).
-db.exec(fs.readFileSync(SCHEMA_PATH, 'utf8'))
-
-// 2) Sembrar categorías solo si la tabla está vacía.
-const { count } = db.prepare('SELECT COUNT(*) AS count FROM categories').get()
-if (count === 0) {
-  const insert = db.prepare(
-    'INSERT INTO categories (name, icon, color, type) VALUES (@name, @icon, @color, @type)'
-  )
-  const insertMany = db.transaction((rows) => {
-    for (const row of rows) insert.run(row)
-  })
-  insertMany(seedCategories)
-  console.log(`🌱 ${seedCategories.length} categorías sembradas (DB nueva)`)
+// Asegurar carpeta local si aplica.
+if (!isRemote) {
+  const dir = path.dirname(LOCAL_PATH)
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
 }
 
-console.log(`📦 SQLite lista en ${DB_PATH}`)
+const client = createClient(authToken ? { url, authToken } : { url })
 
-module.exports = db
+// Normaliza los args de .get/.all/.run al formato de libsql.
+function normalize(callArgs) {
+  if (callArgs.length === 0) return undefined
+  if (callArgs.length === 1) {
+    const a = callArgs[0]
+    if (a === undefined || a === null) return undefined
+    if (Array.isArray(a)) return a
+    if (typeof a === 'object') return a // named params { name: value }
+    return [a] // escalar suelto → posicional
+  }
+  return callArgs // varios posicionales
+}
+
+function prepare(sql) {
+  const exec = async (callArgs) => {
+    const args = normalize(callArgs)
+    return client.execute(args === undefined ? sql : { sql, args })
+  }
+  return {
+    async get(...callArgs) {
+      const res = await exec(callArgs)
+      return res.rows[0]
+    },
+    async all(...callArgs) {
+      const res = await exec(callArgs)
+      return res.rows
+    },
+    async run(...callArgs) {
+      const res = await exec(callArgs)
+      return {
+        changes: Number(res.rowsAffected || 0),
+        lastInsertRowid:
+          res.lastInsertRowid != null ? Number(res.lastInsertRowid) : null,
+      }
+    },
+  }
+}
+
+// Transacción atómica de escritura. stmts: array de { sql, args } o string.
+async function batch(stmts) {
+  return client.batch(stmts, 'write')
+}
+
+// Aplica schema + seed. Idempotente. Llamar UNA vez al arrancar (await).
+let ready = false
+async function init() {
+  if (ready) return
+  try {
+    await client.execute('PRAGMA foreign_keys = ON')
+  } catch {
+    // En remoto puede no aplicar; lo ignoramos.
+  }
+
+  const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8')
+  await client.executeMultiple(schema)
+
+  const r = await client.execute('SELECT COUNT(*) AS count FROM categories')
+  if (Number(r.rows[0].count) === 0) {
+    await batch(
+      seedCategories.map((c) => ({
+        sql: 'INSERT INTO categories (name, icon, color, type) VALUES (:name, :icon, :color, :type)',
+        args: c,
+      }))
+    )
+    console.log(`🌱 ${seedCategories.length} categorías sembradas (DB nueva)`)
+  }
+
+  ready = true
+  console.log(`📦 DB lista (${isRemote ? 'Turso/remoto' : 'local: ' + url})`)
+}
+
+module.exports = { prepare, batch, init, client }

@@ -1,7 +1,8 @@
-const express = require('express')
+﻿const express = require('express')
 const { body, param, query } = require('express-validator')
 const validate = require('../middleware/validate')
-const c = require('../controllers/cardChargesController')
+const asyncify = require('../utils/asyncify')
+const c = asyncify(require('../controllers/cardChargesController'))
 
 const router = express.Router()
 

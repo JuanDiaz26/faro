@@ -1,4 +1,4 @@
-// Backup completo de la base: export e import en JSON.
+﻿// Backup completo de la base: export e import en JSON.
 // Pensado para migrar datos local → producción o para tener red de seguridad.
 const db = require('../db/database')
 const pkg = require('../package.json')
@@ -24,10 +24,10 @@ const TABLES = [
 ]
 
 // GET /api/backup/export → JSON con todas las tablas.
-function exportAll(req, res) {
+async function exportAll(req, res) {
   const data = {}
   for (const t of TABLES) {
-    data[t] = db.prepare(`SELECT * FROM ${t}`).all()
+    data[t] = await db.prepare(`SELECT * FROM ${t}`).all()
   }
   res.json({
     app: 'faro',
@@ -39,7 +39,7 @@ function exportAll(req, res) {
 
 // POST /api/backup/import → reemplaza TODO con los datos del payload.
 // Atómico: si algo falla, rollback automático.
-function importAll(req, res) {
+async function importAll(req, res) {
   const payload = req.body
   if (!payload || !VALID_APP_TAGS.has(payload.app) || !payload.data) {
     return res.status(400).json({ error: 'Backup inválido: falta app:"faro" o data.' })
@@ -56,26 +56,25 @@ function importAll(req, res) {
   }
 
   try {
-    const restore = db.transaction((d) => {
-      // Borrar en orden inverso (hijos primero) para no chocar con FKs.
-      for (const t of [...TABLES].reverse()) {
-        db.prepare(`DELETE FROM ${t}`).run()
-      }
-      // Resetear autoincrement para preservar IDs del export.
-      db.prepare(`DELETE FROM sqlite_sequence`).run()
+    // Armamos TODAS las sentencias y las corremos en una sola transacción atómica.
+    const stmts = []
+    // Borrar en orden inverso (hijos primero) para no chocar con FKs.
+    for (const t of [...TABLES].reverse()) {
+      stmts.push({ sql: `DELETE FROM ${t}` })
+    }
+    // Resetear autoincrement para preservar IDs del export.
+    stmts.push({ sql: 'DELETE FROM sqlite_sequence' })
 
-      for (const t of TABLES) {
-        const rows = d[t]
-        if (rows.length === 0) continue
-        const cols = Object.keys(rows[0])
-        const placeholders = cols.map((c) => `@${c}`).join(', ')
-        const stmt = db.prepare(
-          `INSERT INTO ${t} (${cols.join(', ')}) VALUES (${placeholders})`
-        )
-        for (const row of rows) stmt.run(row)
-      }
-    })
-    restore(data)
+    for (const t of TABLES) {
+      const rows = data[t]
+      if (rows.length === 0) continue
+      const cols = Object.keys(rows[0])
+      const placeholders = cols.map((c) => `@${c}`).join(', ')
+      const sql = `INSERT INTO ${t} (${cols.join(', ')}) VALUES (${placeholders})`
+      for (const row of rows) stmts.push({ sql, args: row })
+    }
+
+    await db.batch(stmts)
 
     const counts = Object.fromEntries(TABLES.map((t) => [t, data[t].length]))
     res.json({ ok: true, restored: counts })

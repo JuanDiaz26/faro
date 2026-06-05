@@ -1,4 +1,4 @@
-// Lógica de negocio de gastos fijos recurrentes (alquiler, telefonía, etc).
+﻿// Lógica de negocio de gastos fijos recurrentes (alquiler, telefonía, etc).
 const db = require('../db/database')
 
 const SELECT_WITH_CATEGORY = `
@@ -10,11 +10,10 @@ const SELECT_WITH_CATEGORY = `
   JOIN categories c ON c.id = f.category_id
 `
 
-function getAll(req, res) {
+async function getAll(req, res) {
   const includeArchived = req.query.active === 'false'
   const where = includeArchived ? '' : 'WHERE f.active = 1'
-  const rows = db
-    .prepare(
+  const rows = await db.prepare(
       `${SELECT_WITH_CATEGORY} ${where}
        ORDER BY f.active DESC,
                 CASE WHEN f.due_day IS NULL THEN 1 ELSE 0 END,
@@ -25,27 +24,25 @@ function getAll(req, res) {
   res.json(rows)
 }
 
-function getOne(req, res) {
-  const row = db.prepare(`${SELECT_WITH_CATEGORY} WHERE f.id = ?`).get(req.params.id)
+async function getOne(req, res) {
+  const row = await db.prepare(`${SELECT_WITH_CATEGORY} WHERE f.id = ?`).get(req.params.id)
   if (!row) return res.status(404).json({ error: 'Gasto fijo no encontrado' })
   res.json(row)
 }
 
-function create(req, res) {
+async function create(req, res) {
   const { category_id, name, amount, due_day = null } = req.body
-  const { lastInsertRowid } = db
-    .prepare(
+  const { lastInsertRowid } = await db.prepare(
       `INSERT INTO fixed_expenses (category_id, name, amount, due_day, active)
        VALUES (@category_id, @name, @amount, @due_day, 1)`
     )
     .run({ category_id, name, amount, due_day })
-  const created = db
-    .prepare(`${SELECT_WITH_CATEGORY} WHERE f.id = ?`)
+  const created = await db.prepare(`${SELECT_WITH_CATEGORY} WHERE f.id = ?`)
     .get(lastInsertRowid)
   res.status(201).json(created)
 }
 
-function update(req, res) {
+async function update(req, res) {
   const id = Number(req.params.id)
   const {
     category_id,
@@ -55,8 +52,7 @@ function update(req, res) {
     active = true,
   } = req.body
 
-  const { changes } = db
-    .prepare(
+  const { changes } = await db.prepare(
       `UPDATE fixed_expenses SET
          category_id = @category_id,
          name        = @name,
@@ -76,13 +72,12 @@ function update(req, res) {
 
   if (!changes) return res.status(404).json({ error: 'Gasto fijo no encontrado' })
 
-  const updated = db.prepare(`${SELECT_WITH_CATEGORY} WHERE f.id = ?`).get(id)
+  const updated = await db.prepare(`${SELECT_WITH_CATEGORY} WHERE f.id = ?`).get(id)
   res.json(updated)
 }
 
-function remove(req, res) {
-  const { changes } = db
-    .prepare('DELETE FROM fixed_expenses WHERE id = ?')
+async function remove(req, res) {
+  const { changes } = await db.prepare('DELETE FROM fixed_expenses WHERE id = ?')
     .run(req.params.id)
   if (!changes) return res.status(404).json({ error: 'Gasto fijo no encontrado' })
   res.status(204).send()

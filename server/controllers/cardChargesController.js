@@ -1,4 +1,4 @@
-// CRUD de cargos pendientes de tarjeta.
+﻿// CRUD de cargos pendientes de tarjeta.
 const db = require('../db/database')
 
 const SELECT_WITH_RELATED = `
@@ -13,7 +13,7 @@ const SELECT_WITH_RELATED = `
   LEFT JOIN categories cat ON cat.id = ch.category_id
 `
 
-function getAll(req, res) {
+async function getAll(req, res) {
   const { card_id, active } = req.query
   const conditions = []
   const params = {}
@@ -26,16 +26,16 @@ function getAll(req, res) {
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
   const sql = `${SELECT_WITH_RELATED} ${where} ORDER BY ch.active DESC, ch.id DESC`
   const stmt = db.prepare(sql)
-  res.json(conditions.length ? stmt.all(params) : stmt.all())
+  res.json(conditions.length ? await stmt.all(params) : await stmt.all())
 }
 
-function getOne(req, res) {
-  const row = db.prepare(`${SELECT_WITH_RELATED} WHERE ch.id = ?`).get(req.params.id)
+async function getOne(req, res) {
+  const row = await db.prepare(`${SELECT_WITH_RELATED} WHERE ch.id = ?`).get(req.params.id)
   if (!row) return res.status(404).json({ error: 'Cargo no encontrado' })
   res.json(row)
 }
 
-function create(req, res) {
+async function create(req, res) {
   const {
     card_id,
     description,
@@ -45,8 +45,7 @@ function create(req, res) {
     category_id = null,
     charge_date,
   } = req.body
-  const { lastInsertRowid } = db
-    .prepare(
+  const { lastInsertRowid } = await db.prepare(
       `INSERT INTO card_charges
         (card_id, description, amount, remaining_months, total_months, category_id, charge_date, active)
        VALUES (@card_id, @description, @amount, @remaining_months, @total_months, @category_id, @charge_date, 1)`
@@ -60,13 +59,12 @@ function create(req, res) {
       category_id,
       charge_date,
     })
-  const created = db
-    .prepare(`${SELECT_WITH_RELATED} WHERE ch.id = ?`)
+  const created = await db.prepare(`${SELECT_WITH_RELATED} WHERE ch.id = ?`)
     .get(lastInsertRowid)
   res.status(201).json(created)
 }
 
-function update(req, res) {
+async function update(req, res) {
   const id = Number(req.params.id)
   const {
     card_id,
@@ -78,8 +76,7 @@ function update(req, res) {
     charge_date,
     active = true,
   } = req.body
-  const { changes } = db
-    .prepare(
+  const { changes } = await db.prepare(
       `UPDATE card_charges SET
          card_id          = @card_id,
          description      = @description,
@@ -103,12 +100,12 @@ function update(req, res) {
       active: active ? 1 : 0,
     })
   if (!changes) return res.status(404).json({ error: 'Cargo no encontrado' })
-  const updated = db.prepare(`${SELECT_WITH_RELATED} WHERE ch.id = ?`).get(id)
+  const updated = await db.prepare(`${SELECT_WITH_RELATED} WHERE ch.id = ?`).get(id)
   res.json(updated)
 }
 
-function remove(req, res) {
-  const { changes } = db.prepare('DELETE FROM card_charges WHERE id = ?').run(req.params.id)
+async function remove(req, res) {
+  const { changes } = await db.prepare('DELETE FROM card_charges WHERE id = ?').run(req.params.id)
   if (!changes) return res.status(404).json({ error: 'Cargo no encontrado' })
   res.status(204).send()
 }
