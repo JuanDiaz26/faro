@@ -6,6 +6,8 @@ import {
   getGoals,
 } from '../api/savings'
 import { todayLocalISO } from '../utils/format'
+import { useCategoriesStore } from '../store/categories'
+import CategoryPicker from './CategoryPicker'
 import useBodyScrollLock from '../hooks/useBodyScrollLock'
 import { useUIStore } from '../store/ui'
 
@@ -24,10 +26,14 @@ export default function SavingsMovementForm({
   movement = null,
 }) {
   const isEditing = Boolean(movement)
+  const { categories, loaded: catsLoaded, fetch: fetchCats } = useCategoriesStore()
   const [goals, setGoals] = useState([])
   const [goalId, setGoalId] = useState('')
   const [amount, setAmount] = useState('')
   const [isWithdrawal, setIsWithdrawal] = useState(false)
+  // En un retiro: 'spent' = lo gastó (crea gasto) · 'pocket' = volvió al efectivo
+  const [withdrawalMode, setWithdrawalMode] = useState('spent')
+  const [categoryId, setCategoryId] = useState(null)
   const [source, setSource] = useState(null)
   const [date, setDate] = useState(todayLocalISO())
   const [description, setDescription] = useState('')
@@ -36,10 +42,14 @@ export default function SavingsMovementForm({
   const [error, setError] = useState(null)
   const amountRef = useRef(null)
 
+  // El selector de categoría (retiro gastado) sólo aplica al crear un retiro nuevo.
+  const showSpentExpense = isWithdrawal && !isEditing && withdrawalMode === 'spent'
+
   useEffect(() => {
     if (!open) return
     getGoals().then(setGoals).catch(() => setGoals([]))
-  }, [open])
+    if (!catsLoaded) fetchCats()
+  }, [open, catsLoaded, fetchCats])
 
   useEffect(() => {
     if (!open) return
@@ -59,6 +69,8 @@ export default function SavingsMovementForm({
       setDate(todayLocalISO())
       setDescription('')
     }
+    setWithdrawalMode('spent')
+    setCategoryId(null)
     setError(null)
     setTimeout(() => amountRef.current?.focus(), 100)
   }, [open, movement])
@@ -70,7 +82,8 @@ export default function SavingsMovementForm({
     return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
-  const canSubmit = !submitting && !deleting && Number(amount) > 0
+  const canSubmit =
+    !submitting && !deleting && Number(amount) > 0 && (!showSpentExpense || categoryId)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -84,6 +97,10 @@ export default function SavingsMovementForm({
         date,
         source: isWithdrawal ? null : (source || null),
         description: description.trim() || null,
+      }
+      // Retiro gastado: adjuntamos el gasto para que el backend lo registre atómicamente.
+      if (showSpentExpense) {
+        payload.expense = { category_id: categoryId, payment_method: null }
       }
       const saved = isEditing
         ? await updateMovement(movement.id, payload)
@@ -208,6 +225,56 @@ export default function SavingsMovementForm({
               ))}
           </select>
         </div>
+
+        {isWithdrawal && !isEditing && (
+          <div className="mt-4">
+            <label className="text-xs text-slate-500">¿Qué hiciste con esta plata?</label>
+            <div className="mt-1 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setWithdrawalMode('spent')}
+                className={`rounded-xl p-2.5 text-center transition-colors ${
+                  withdrawalMode === 'spent'
+                    ? 'bg-rose-500 text-white'
+                    : 'bg-slate-100 text-slate-700'
+                }`}
+              >
+                <div className="text-sm font-semibold">🛒 La gasté</div>
+                <div className="mt-0.5 text-[10px] opacity-80">Se registra como gasto</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setWithdrawalMode('pocket')}
+                className={`rounded-xl p-2.5 text-center transition-colors ${
+                  withdrawalMode === 'pocket'
+                    ? 'bg-slate-700 text-white'
+                    : 'bg-slate-100 text-slate-700'
+                }`}
+              >
+                <div className="text-sm font-semibold">👛 A mi efectivo</div>
+                <div className="mt-0.5 text-[10px] opacity-80">Vuelve a tu disponible</div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showSpentExpense && (
+          <div className="mt-4">
+            <label className="text-xs text-slate-500">¿En qué lo gastaste?</label>
+            <div className="mt-1">
+              {!catsLoaded ? (
+                <div className="text-slate-400 text-sm">Cargando categorías…</div>
+              ) : (
+                <CategoryPicker
+                  categories={categories}
+                  type="expense"
+                  value={categoryId}
+                  onChange={setCategoryId}
+                />
+              )}
+            </div>
+          </div>
+        )}
 
         {!isWithdrawal && (
           <div className="mt-4">

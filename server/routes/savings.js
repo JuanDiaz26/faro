@@ -59,6 +59,16 @@ const movementBodyRules = [
     .isIn(['sueldo', 'aguinaldo', 'bono', 'extra', 'otro'])
     .withMessage('source inválido'),
   body('description').optional({ values: 'null' }).isString().trim(),
+  // Retiro "gastado": opcional. Si viene, debe traer category_id válido.
+  body('expense')
+    .optional({ values: 'null' })
+    .custom((v) => {
+      if (typeof v !== 'object' || Array.isArray(v)) throw new Error('expense inválido')
+      if (!Number.isInteger(v.category_id) || v.category_id <= 0) {
+        throw new Error('expense.category_id inválido')
+      }
+      return true
+    }),
 ]
 
 router.get(

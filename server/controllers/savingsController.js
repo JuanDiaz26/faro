@@ -136,7 +136,43 @@ async function listMovements(req, res) {
 }
 
 async function createMovement(req, res) {
-  const { goal_id = null, amount, date, source = null, description = null } = req.body
+  const {
+    goal_id = null,
+    amount,
+    date,
+    source = null,
+    description = null,
+    expense = null,
+  } = req.body
+  const isWithdrawal = Number(amount) < 0
+
+  // Retiro "gastado": además del movimiento, registramos el gasto real para que
+  // el saldo disponible no se infle. Ambos inserts van en un batch atómico.
+  if (isWithdrawal && expense && expense.category_id) {
+    const results = await db.batch([
+      {
+        sql: `INSERT INTO savings_movements (goal_id, amount, date, source, description)
+              VALUES (@goal_id, @amount, @date, @source, @description)`,
+        args: { goal_id, amount, date, source: null, description },
+      },
+      {
+        sql: `INSERT INTO transactions (category_id, amount, date, type, payment_method, description)
+              VALUES (@category_id, @amount, @date, 'expense', @payment_method, @description)`,
+        args: {
+          category_id: expense.category_id,
+          amount: Math.abs(Number(amount)),
+          date,
+          payment_method: expense.payment_method || null,
+          description: description || 'Retiro de ahorro',
+        },
+      },
+    ])
+    const movementId = Number(results[0].lastInsertRowid)
+    const created = await db.prepare(`${SELECT_MOVEMENT_WITH_GOAL} WHERE m.id = ?`).get(movementId)
+    return res.status(201).json(created)
+  }
+
+  // Aporte, o retiro que vuelve al efectivo: solo el movimiento.
   const { lastInsertRowid } = await db.prepare(
       `INSERT INTO savings_movements (goal_id, amount, date, source, description)
        VALUES (@goal_id, @amount, @date, @source, @description)`
