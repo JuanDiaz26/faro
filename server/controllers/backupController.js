@@ -46,12 +46,14 @@ async function importAll(req, res) {
   }
   const data = payload.data
 
-  // Validar que las claves esperadas existan (aunque sean arrays vacíos).
+  // Validar que las claves presentes sean arrays; las ausentes se tratan como vacías.
   for (const t of TABLES) {
-    if (!Array.isArray(data[t])) {
+    if (data[t] === undefined) {
+      data[t] = []
+    } else if (!Array.isArray(data[t])) {
       return res
         .status(400)
-        .json({ error: `Backup inválido: falta o no es array la tabla "${t}".` })
+        .json({ error: `Backup inválido: la tabla "${t}" no es un array.` })
     }
   }
 
