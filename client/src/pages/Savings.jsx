@@ -139,15 +139,15 @@ export default function Savings() {
                     >
                       <div className="text-left min-w-0">
                         <div className="font-medium text-slate-800 truncate">
-                          {m.description || (m.source ? SOURCE_LABELS[m.source] : 'Aporte')}
+                          {m.description || (m.source ? SOURCE_LABELS[m.source] : m.amount < 0 ? 'Retiro' : 'Aporte')}
                         </div>
                         <div className="text-xs text-slate-500">
                           {m.source && m.description ? SOURCE_LABELS[m.source] + ' · ' : ''}
                           {m.date}
                         </div>
                       </div>
-                      <div className="font-bold text-emerald-600 whitespace-nowrap">
-                        + {formatMoney(m.amount)}
+                      <div className={`font-bold whitespace-nowrap ${m.amount < 0 ? 'text-rose-500' : 'text-emerald-600'}`}>
+                        {m.amount < 0 ? '− ' : '+ '}{formatMoney(Math.abs(m.amount))}
                       </div>
                     </button>
                   </li>
@@ -185,7 +185,7 @@ export default function Savings() {
 function GoalCard({ goal, onClick }) {
   const pct =
     goal.target_amount > 0
-      ? Math.min(100, (goal.current_amount / goal.target_amount) * 100)
+      ? Math.min(100, Math.max(0, (goal.current_amount / goal.target_amount) * 100))
       : 0
   const remaining = Math.max(0, goal.target_amount - goal.current_amount)
   const reached = goal.current_amount >= goal.target_amount

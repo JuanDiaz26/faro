@@ -52,7 +52,7 @@ router.delete(
 
 const movementBodyRules = [
   body('goal_id').optional({ values: 'null' }).isInt({ gt: 0 }).withMessage('goal_id inválido'),
-  body('amount').isFloat({ gt: 0 }).withMessage('amount debe ser > 0'),
+  body('amount').isFloat().custom((v) => Number(v) !== 0).withMessage('amount no puede ser 0'),
   body('date').matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('date debe ser YYYY-MM-DD'),
   body('source')
     .optional({ values: 'null' })

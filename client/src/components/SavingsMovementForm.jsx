@@ -27,6 +27,7 @@ export default function SavingsMovementForm({
   const [goals, setGoals] = useState([])
   const [goalId, setGoalId] = useState('')
   const [amount, setAmount] = useState('')
+  const [isWithdrawal, setIsWithdrawal] = useState(false)
   const [source, setSource] = useState(null)
   const [date, setDate] = useState(todayLocalISO())
   const [description, setDescription] = useState('')
@@ -43,14 +44,17 @@ export default function SavingsMovementForm({
   useEffect(() => {
     if (!open) return
     if (movement) {
+      const isNeg = movement.amount < 0
       setGoalId(movement.goal_id ? String(movement.goal_id) : '')
-      setAmount(String(movement.amount))
-      setSource(movement.source)
+      setAmount(String(Math.abs(movement.amount)))
+      setIsWithdrawal(isNeg)
+      setSource(isNeg ? null : movement.source)
       setDate(movement.date)
       setDescription(movement.description || '')
     } else {
       setGoalId('')
       setAmount('')
+      setIsWithdrawal(false)
       setSource(null)
       setDate(todayLocalISO())
       setDescription('')
@@ -76,9 +80,9 @@ export default function SavingsMovementForm({
     try {
       const payload = {
         goal_id: goalId ? Number(goalId) : null,
-        amount: Number(amount),
+        amount: isWithdrawal ? -Number(amount) : Number(amount),
         date,
-        source: source || null,
+        source: isWithdrawal ? null : (source || null),
         description: description.trim() || null,
       }
       const saved = isEditing
@@ -132,7 +136,9 @@ export default function SavingsMovementForm({
       >
         <header className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-800">
-            {isEditing ? 'Editar aporte' : 'Nuevo aporte'}
+            {isEditing
+              ? isWithdrawal ? 'Editar retiro' : 'Editar aporte'
+              : isWithdrawal ? 'Nuevo retiro' : 'Nuevo aporte'}
           </h2>
           <button
             type="button"
@@ -144,10 +150,31 @@ export default function SavingsMovementForm({
           </button>
         </header>
 
+        <div className="mt-4 flex rounded-xl overflow-hidden border border-slate-200 text-sm font-semibold">
+          <button
+            type="button"
+            onClick={() => setIsWithdrawal(false)}
+            className={`flex-1 py-2 transition-colors ${
+              !isWithdrawal ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500'
+            }`}
+          >
+            ↑ Aporte
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsWithdrawal(true)}
+            className={`flex-1 py-2 transition-colors ${
+              isWithdrawal ? 'bg-rose-500 text-white' : 'bg-white text-slate-500'
+            }`}
+          >
+            ↓ Retiro
+          </button>
+        </div>
+
         <div className="mt-4">
           <label className="text-xs text-slate-500">Monto</label>
           <div className="flex items-center mt-1">
-            <span className="text-3xl text-slate-400 mr-1">$</span>
+            <span className={`text-3xl mr-1 ${isWithdrawal ? 'text-rose-400' : 'text-slate-400'}`}>$</span>
             <input
               ref={amountRef}
               type="number"
@@ -157,7 +184,9 @@ export default function SavingsMovementForm({
               placeholder="0"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full text-3xl font-bold bg-transparent focus:outline-none"
+              className={`w-full text-3xl font-bold bg-transparent focus:outline-none ${
+                isWithdrawal ? 'text-rose-600' : ''
+              }`}
             />
           </div>
         </div>
@@ -180,26 +209,28 @@ export default function SavingsMovementForm({
           </select>
         </div>
 
-        <div className="mt-4">
-          <label className="text-xs text-slate-500">Origen (opcional)</label>
-          <div className="mt-1 grid grid-cols-5 gap-2">
-            {SOURCES.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setSource(source === s.id ? null : s.id)}
-                className={`rounded-xl p-2 text-center transition-colors ${
-                  source === s.id
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-slate-100 text-slate-700'
-                }`}
-              >
-                <div className="text-lg leading-none">{s.icon}</div>
-                <div className="mt-1 text-[10px]">{s.label}</div>
-              </button>
-            ))}
+        {!isWithdrawal && (
+          <div className="mt-4">
+            <label className="text-xs text-slate-500">Origen (opcional)</label>
+            <div className="mt-1 grid grid-cols-5 gap-2">
+              {SOURCES.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setSource(source === s.id ? null : s.id)}
+                  className={`rounded-xl p-2 text-center transition-colors ${
+                    source === s.id
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  <div className="text-lg leading-none">{s.icon}</div>
+                  <div className="mt-1 text-[10px]">{s.label}</div>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <div>
@@ -253,7 +284,7 @@ export default function SavingsMovementForm({
               disabled={deleting || submitting}
               className="w-full py-2 text-sm text-rose-600 font-semibold disabled:opacity-50"
             >
-              {deleting ? 'Borrando…' : '🗑 Borrar aporte'}
+              {deleting ? 'Borrando…' : `🗑 Borrar ${isWithdrawal ? 'retiro' : 'aporte'}`}
             </button>
           )}
         </div>
